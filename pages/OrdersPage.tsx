@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo, useEffect } from 'react';
 import type { Order, OrderStatus } from '../types';
 import ClockIcon from '../components/icons/ClockIcon';
@@ -141,17 +142,16 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ setBottomNavVisible }) => {
     const [orders, setOrders] = useState<Order[]>(initialOrdersData);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-    type TabStatus = 'All' | OrderStatus;
-    const tabs: { name: string; status: TabStatus }[] = [
-        { name: 'Semua Pesanan', status: 'All' },
-        { name: 'Pembayaran', status: 'Waiting for Payment' },
-        { name: 'Survey', status: 'Survey' },
-        { name: 'Pengerjaan', status: 'In Progress' },
-        { name: 'Garansi', status: 'Warranty Period' },
-        { name: 'Selesai', status: 'Completed' },
-        { name: 'Dibatalkan', status: 'Cancelled' },
+    type TabKey = 'All' | 'Pembayaran' | 'Pelaksanaan' | 'Dibatalkan';
+    
+    const tabs: { name: string; key: TabKey }[] = [
+        { name: 'Semua Pesanan', key: 'All' },
+        { name: 'Pembayaran', key: 'Pembayaran' },
+        { name: 'Pelaksanaan', key: 'Pelaksanaan' },
+        { name: 'Dibatalkan', key: 'Dibatalkan' },
     ];
-    const [activeTab, setActiveTab] = useState<TabStatus>('All');
+    
+    const [activeTab, setActiveTab] = useState<TabKey>('All');
 
     useEffect(() => {
         const newOrderJson = sessionStorage.getItem('newlyCreatedOrder');
@@ -175,10 +175,19 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ setBottomNavVisible }) => {
 
 
     const filteredOrders = useMemo(() => {
-        if (activeTab === 'All') {
-            return orders;
+        switch (activeTab) {
+            case 'All':
+                return orders;
+            case 'Pembayaran':
+                return orders.filter(order => order.status === 'Waiting for Payment');
+            case 'Pelaksanaan':
+                const executionStatuses: OrderStatus[] = ['Survey', 'In Progress', 'Warranty Period', 'Completed'];
+                return orders.filter(order => executionStatuses.includes(order.status));
+            case 'Dibatalkan':
+                return orders.filter(order => order.status === 'Cancelled');
+            default:
+                return orders;
         }
-        return orders.filter(order => order.status === activeTab);
     }, [orders, activeTab]);
 
     const handleSelectOrder = (order: Order) => {
@@ -219,9 +228,9 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ setBottomNavVisible }) => {
                     {tabs.map(tab => (
                         <button
                             key={tab.name}
-                            onClick={() => setActiveTab(tab.status)}
+                            onClick={() => setActiveTab(tab.key)}
                             className={`flex-shrink-0 px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-200 whitespace-nowrap ${
-                                activeTab === tab.status
+                                activeTab === tab.key
                                 ? 'bg-blue-800 text-white shadow'
                                 : 'bg-white text-slate-700 hover:bg-slate-200'
                             }`}

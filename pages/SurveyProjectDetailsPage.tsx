@@ -18,6 +18,8 @@ import SpinnerIcon from '../components/icons/SpinnerIcon';
 import CheckCircleIcon from '../components/icons/CheckCircleIcon';
 import ArrowUpOnSquareIcon from '../components/icons/ArrowUpOnSquareIcon';
 import TrashIcon from '../components/icons/TrashIcon';
+import PencilIcon from '../components/icons/PencilIcon';
+import CubeTransparentIcon from '../components/icons/CubeTransparentIcon';
 
 
 interface SurveyProjectDetailsPageProps {
@@ -272,14 +274,29 @@ const FileUploadField: React.FC<{
     );
 };
 
+const interiorJobTypes = [
+    { id: 'Interior', label: 'Interior', icon: <Squares2x2Icon className="w-7 h-7" /> },
+    { id: 'Eksterior', label: 'Eksterior', icon: <HomeModernIcon className="w-7 h-7" /> },
+    { id: 'Kitchen Set', label: 'Kitchen Set', icon: <WrenchScrewdriverIcon className="w-7 h-7" /> },
+    { id: 'Furniture', label: 'Furniture', icon: <CubeTransparentIcon className="w-7 h-7" /> },
+];
+
+const buildRenovateJobTypes = [
+    { id: 'Bangun', label: 'Bangun', icon: <HomeModernIcon className="w-7 h-7" /> },
+    { id: 'Renovasi', label: 'Renovasi', icon: <WrenchScrewdriverIcon className="w-7 h-7" /> },
+];
 
 const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ categoryName, onBack, onNext, initialData }) => {
     
     const [isCostModalOpen, setIsCostModalOpen] = useState(false);
-    const [jobType, setJobType] = useState(initialData.jobType || 'Bangun');
+    
+    const jobTypesToShow = categoryName === 'Interior / Eksterior' ? interiorJobTypes : buildRenovateJobTypes;
+    
+    const [jobType, setJobType] = useState(initialData.jobType || jobTypesToShow[0].id);
     const [photos, setPhotos] = useState<File[]>(initialData.photos || []);
     const [documents, setDocuments] = useState<File[]>(initialData.documents || []);
     
+    // State for Bangun / Renovasi forms
     const [bangunData, setBangunData] = useState({
         jenisProperti: initialData.jenisProperti || 'Rumah',
         jumlahLantai: initialData.jumlahLantai || '2 Lantai',
@@ -295,6 +312,38 @@ const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ cat
         estimasiLuas: initialData.estimasiLuas || '',
     });
     
+    // State for Interior / Eksterior forms
+    const [interiorData, setInteriorData] = useState({
+        jenisProperti: initialData.jenisProperti || 'Rumah',
+        ruangan: initialData.ruangan || '',
+        gayaDesain: initialData.gayaDesain || '',
+        detailPekerjaan: initialData.detailPekerjaan || '',
+        estimasiLuas: initialData.estimasiLuas || '',
+    });
+
+    const [eksteriorData, setEksteriorData] = useState({
+        jenisProperti: initialData.jenisProperti || 'Rumah',
+        areaEksterior: initialData.areaEksterior || '',
+        detailPekerjaan: initialData.detailPekerjaan || '',
+        estimasiLuas: initialData.estimasiLuas || '',
+    });
+
+    const [kitchenSetData, setKitchenSetData] = useState({
+        jenisProperti: initialData.jenisProperti || 'Rumah',
+        bentukDapur: initialData.bentukDapur || 'L-Shape',
+        material: initialData.material || '',
+        estimasiUkuran: initialData.estimasiUkuran || '',
+        infoTambahan: initialData.infoTambahan || '',
+    });
+
+    const [furnitureData, setFurnitureData] = useState({
+        jenisFurniture: initialData.jenisFurniture || '',
+        jumlah: initialData.jumlah || 1,
+        material: initialData.material || '',
+        estimasiUkuran: initialData.estimasiUkuran || '',
+        infoTambahan: initialData.infoTambahan || '',
+    });
+
     const handleBangunChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { id, value } = e.target;
         setBangunData(prev => ({ ...prev, [id]: value }));
@@ -304,8 +353,43 @@ const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ cat
         const { id, value } = e.target;
         setRenovasiData(prev => ({ ...prev, [id]: value }));
     };
+    
+    const handleInteriorChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { id, value } = e.target;
+        setInteriorData(prev => ({ ...prev, [id]: value }));
+    };
+    
+    const handleEksteriorChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { id, value } = e.target;
+        setEksteriorData(prev => ({ ...prev, [id]: value }));
+    };
+
+    const handleKitchenSetChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { id, value } = e.target;
+        setKitchenSetData(prev => ({ ...prev, [id]: value }));
+    };
+    
+    const handleFurnitureChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { id, value } = e.target;
+        setFurnitureData(prev => ({ ...prev, [id]: value }));
+    };
 
     const isFormValid = useMemo(() => {
+        if (categoryName === 'Interior / Eksterior') {
+            switch (jobType) {
+                case 'Interior':
+                    return !!(interiorData.jenisProperti && interiorData.ruangan && interiorData.detailPekerjaan);
+                case 'Eksterior':
+                    return !!(eksteriorData.jenisProperti && eksteriorData.areaEksterior && eksteriorData.detailPekerjaan);
+                case 'Kitchen Set':
+                    return !!(kitchenSetData.jenisProperti && kitchenSetData.bentukDapur && kitchenSetData.material);
+                case 'Furniture':
+                    return !!(furnitureData.jenisFurniture && furnitureData.jumlah > 0 && furnitureData.material);
+                default:
+                    return false;
+            }
+        }
+        // Existing logic
         if (jobType === 'Bangun') {
             return !!(bangunData.jenisProperti && bangunData.jumlahLantai && bangunData.luasTanah && bangunData.luasBangunan);
         }
@@ -313,10 +397,20 @@ const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ cat
             return !!(renovasiData.jenisProperti && renovasiData.ruanganDirenovasi && renovasiData.detailPekerjaan);
         }
         return false;
-    }, [jobType, bangunData, renovasiData]);
+    }, [categoryName, jobType, bangunData, renovasiData, interiorData, eksteriorData, kitchenSetData, furnitureData]);
 
     const handleLanjutkan = () => {
-        const dataToPass = jobType === 'Bangun' ? bangunData : renovasiData;
+        let dataToPass = {};
+        if (categoryName === 'Interior / Eksterior') {
+            switch (jobType) {
+                case 'Interior': dataToPass = interiorData; break;
+                case 'Eksterior': dataToPass = eksteriorData; break;
+                case 'Kitchen Set': dataToPass = kitchenSetData; break;
+                case 'Furniture': dataToPass = furnitureData; break;
+            }
+        } else {
+            dataToPass = jobType === 'Bangun' ? bangunData : renovasiData;
+        }
         onNext({ jobType, ...dataToPass, photos, documents });
     };
     
@@ -342,6 +436,65 @@ const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ cat
             <FileUploadField id="documents" icon={<DocumentArrowUpIcon className="w-6 h-6" />} label="Dokumen Pendukung" onFilesChange={setDocuments} selectedFiles={documents} accept=".pdf,.doc,.docx,.jpg,.png" isOptional />
         </div>
     );
+    
+    const renderInteriorForm = () => (
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 divide-y divide-slate-100 animate-fade-in-up">
+            <EditableFormField id="jenisProperti" icon={<BuildingOfficeIcon className="w-6 h-6" />} label="Jenis Properti*" value={interiorData.jenisProperti} onChange={handleInteriorChange} type="select" options={['Rumah', 'Apartemen', 'Kantor', 'Ruko']} />
+            <EditableFormField id="ruangan" icon={<Squares2x2Icon className="w-6 h-6" />} label="Ruangan yang Dikerjakan*" value={interiorData.ruangan} onChange={handleInteriorChange} type="text" placeholder="Contoh: Ruang Tamu, Kamar Tidur" />
+            <EditableFormField id="gayaDesain" icon={<PencilIcon className="w-6 h-6" />} label="Gaya Desain" value={interiorData.gayaDesain} onChange={handleInteriorChange} isOptional type="text" placeholder="Contoh: Minimalis, Industrial" />
+            <EditableFormField id="detailPekerjaan" icon={<DocumentTextIcon className="w-6 h-6" />} label="Detail Pekerjaan*" value={interiorData.detailPekerjaan} onChange={handleInteriorChange} type="textarea" placeholder="Contoh: Pengecatan, pasang wallpaper" />
+            <EditableFormField id="estimasiLuas" icon={<ArrowsPointingOutIcon className="w-6 h-6" />} label="Estimasi Luas (m²)" value={interiorData.estimasiLuas} onChange={handleInteriorChange} isOptional type="number" placeholder="Contoh: 20" />
+            <FileUploadField id="photos" icon={<CameraIcon className="w-6 h-6" />} label="Foto Referensi / Kondisi" onFilesChange={setPhotos} selectedFiles={photos} accept="image/*" isOptional />
+            <FileUploadField id="documents" icon={<DocumentArrowUpIcon className="w-6 h-6" />} label="Dokumen Pendukung" onFilesChange={setDocuments} selectedFiles={documents} accept=".pdf,.doc,.docx,.jpg,.png" isOptional />
+        </div>
+    );
+    
+    const renderEksteriorForm = () => (
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 divide-y divide-slate-100 animate-fade-in-up">
+            <EditableFormField id="jenisProperti" icon={<BuildingOfficeIcon className="w-6 h-6" />} label="Jenis Properti*" value={eksteriorData.jenisProperti} onChange={handleEksteriorChange} type="select" options={['Rumah', 'Ruko', 'Gedung']} />
+            <EditableFormField id="areaEksterior" icon={<Squares2x2Icon className="w-6 h-6" />} label="Area yang Dikerjakan*" value={eksteriorData.areaEksterior} onChange={handleEksteriorChange} type="text" placeholder="Contoh: Fasad, Pagar, Taman" />
+            <EditableFormField id="detailPekerjaan" icon={<DocumentTextIcon className="w-6 h-6" />} label="Detail Pekerjaan*" value={eksteriorData.detailPekerjaan} onChange={handleEksteriorChange} type="textarea" placeholder="Contoh: Pengecatan ulang, perbaikan taman" />
+            <EditableFormField id="estimasiLuas" icon={<ArrowsPointingOutIcon className="w-6 h-6" />} label="Estimasi Luas (m²)" value={eksteriorData.estimasiLuas} onChange={handleEksteriorChange} isOptional type="number" placeholder="Contoh: 50" />
+            <FileUploadField id="photos" icon={<CameraIcon className="w-6 h-6" />} label="Foto Kondisi Saat Ini" onFilesChange={setPhotos} selectedFiles={photos} accept="image/*" isOptional />
+        </div>
+    );
+    
+    const renderKitchenSetForm = () => (
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 divide-y divide-slate-100 animate-fade-in-up">
+            <EditableFormField id="jenisProperti" icon={<BuildingOfficeIcon className="w-6 h-6" />} label="Jenis Properti*" value={kitchenSetData.jenisProperti} onChange={handleKitchenSetChange} type="select" options={['Rumah', 'Apartemen']} />
+            <EditableFormField id="bentukDapur" icon={<Squares2x2Icon className="w-6 h-6" />} label="Bentuk Dapur*" value={kitchenSetData.bentukDapur} onChange={handleKitchenSetChange} type="select" options={['L-Shape', 'U-Shape', 'Island', 'Linear']} />
+            <EditableFormField id="material" icon={<CubeTransparentIcon className="w-6 h-6" />} label="Material yang Diinginkan*" value={kitchenSetData.material} onChange={handleKitchenSetChange} type="text" placeholder="Contoh: HPL, Duco, Kayu Jati" />
+            <EditableFormField id="estimasiUkuran" icon={<ArrowsPointingOutIcon className="w-6 h-6" />} label="Estimasi Ukuran (meter)" value={kitchenSetData.estimasiUkuran} onChange={handleKitchenSetChange} isOptional type="text" placeholder="Contoh: 3m x 2m" />
+            <EditableFormField id="infoTambahan" icon={<InformationCircleIcon className="w-6 h-6" />} label="Informasi Tambahan" value={kitchenSetData.infoTambahan} onChange={handleKitchenSetChange} isOptional type="textarea" placeholder="Termasuk top table granit, backsplash" />
+            <FileUploadField id="photos" icon={<CameraIcon className="w-6 h-6" />} label="Foto Dapur & Referensi" onFilesChange={setPhotos} selectedFiles={photos} accept="image/*" isOptional />
+        </div>
+    );
+    
+    const renderFurnitureForm = () => (
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 divide-y divide-slate-100 animate-fade-in-up">
+            <EditableFormField id="jenisFurniture" icon={<CubeTransparentIcon className="w-6 h-6" />} label="Jenis Furniture*" value={furnitureData.jenisFurniture} onChange={handleFurnitureChange} type="text" placeholder="Contoh: Lemari, Meja TV, Partisi" />
+            <EditableFormField id="jumlah" icon={<WrenchScrewdriverIcon className="w-6 h-6" />} label="Jumlah Unit*" value={furnitureData.jumlah} onChange={handleFurnitureChange} type="number" placeholder="1" />
+            <EditableFormField id="material" icon={<CubeTransparentIcon className="w-6 h-6" />} label="Material yang Diinginkan*" value={furnitureData.material} onChange={handleFurnitureChange} type="text" placeholder="Contoh: Kayu Jati, Plywood, Besi" />
+            <EditableFormField id="estimasiUkuran" icon={<ArrowsPointingOutIcon className="w-6 h-6" />} label="Estimasi Ukuran" value={furnitureData.estimasiUkuran} onChange={handleFurnitureChange} isOptional type="text" placeholder="P: 2m, L: 0.6m, T: 2.2m" />
+            <EditableFormField id="infoTambahan" icon={<InformationCircleIcon className="w-6 h-6" />} label="Informasi Tambahan" value={furnitureData.infoTambahan} onChange={handleFurnitureChange} isOptional type="textarea" placeholder="Finishing HPL, model custom" />
+            <FileUploadField id="photos" icon={<CameraIcon className="w-6 h-6" />} label="Foto Referensi Desain" onFilesChange={setPhotos} selectedFiles={photos} accept="image/*" isOptional />
+        </div>
+    );
+
+    const renderForm = () => {
+        if (categoryName === 'Interior / Eksterior') {
+            switch (jobType) {
+                case 'Interior': return renderInteriorForm();
+                case 'Eksterior': return renderEksteriorForm();
+                case 'Kitchen Set': return renderKitchenSetForm();
+                case 'Furniture': return renderFurnitureForm();
+                default: return null;
+            }
+        } else {
+            return jobType === 'Bangun' ? renderBangunForm() : renderRenovasiForm();
+        }
+    };
+
 
     return (
         <>
@@ -367,23 +520,20 @@ const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ cat
                     <div className="px-4 pt-2 space-y-4">
                         <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
                             <label className="text-sm text-slate-500 mb-3 block">Pilih Jenis Pekerjaan<span className="text-red-500">*</span></label>
-                            <div className="grid grid-cols-2 gap-3">
-                                <JobTypeCard 
-                                    icon={<HomeModernIcon className="w-7 h-7" />}
-                                    label="Bangun"
-                                    isActive={jobType === 'Bangun'}
-                                    onClick={() => setJobType('Bangun')}
-                                />
-                                <JobTypeCard 
-                                    icon={<WrenchScrewdriverIcon className="w-7 h-7" />}
-                                    label="Renovasi"
-                                    isActive={jobType === 'Renovasi'}
-                                    onClick={() => setJobType('Renovasi')}
-                                />
+                            <div className={`grid gap-3 ${jobTypesToShow.length === 2 ? 'grid-cols-2' : 'grid-cols-2'}`}>
+                                {jobTypesToShow.map(type => (
+                                    <JobTypeCard 
+                                        key={type.id}
+                                        icon={type.icon}
+                                        label={type.label}
+                                        isActive={jobType === type.id}
+                                        onClick={() => setJobType(type.id)}
+                                    />
+                                ))}
                             </div>
                         </div>
                         
-                        {jobType === 'Bangun' ? renderBangunForm() : renderRenovasiForm()}
+                        {renderForm()}
                     </div>
                 </main>
 
