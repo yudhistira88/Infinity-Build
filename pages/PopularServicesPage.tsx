@@ -1,12 +1,13 @@
-
 import React, { useState } from 'react';
-import type { Service } from '../types';
+import type { Service, Location } from '../types';
 import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
 import ServiceDetailPage from './ServiceDetailPage';
 
 interface PopularServicesPageProps {
     services: Service[];
     onBack: () => void;
+    location: Location;
+    onNavigate: (page: string) => void;
 }
 
 const ServiceCard: React.FC<{ service: Service; onClick: () => void; }> = ({ service, onClick }) => (
@@ -21,11 +22,11 @@ const ServiceCard: React.FC<{ service: Service; onClick: () => void; }> = ({ ser
     </button>
 );
 
-const PopularServicesPage: React.FC<PopularServicesPageProps> = ({ services, onBack }) => {
+const PopularServicesPage: React.FC<PopularServicesPageProps> = ({ services, onBack, location, onNavigate }) => {
     const [selectedService, setSelectedService] = useState<Service | null>(null);
 
     if (selectedService) {
-        return <ServiceDetailPage service={selectedService} onBack={() => setSelectedService(null)} />;
+        return <ServiceDetailPage service={selectedService} onBack={() => setSelectedService(null)} location={location} onNavigate={onNavigate} />;
     }
 
     return (

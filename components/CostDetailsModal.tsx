@@ -1,0 +1,71 @@
+import React, { useState, useEffect } from 'react';
+import XIcon from './icons/XIcon';
+
+interface CostDetailsModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+const CostDetailsModal: React.FC<CostDetailsModalProps> = ({ isOpen, onClose }) => {
+    const [shouldRender, setShouldRender] = useState(isOpen);
+
+    useEffect(() => {
+        if (isOpen) {
+            setShouldRender(true);
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+            const timer = setTimeout(() => setShouldRender(false), 300); // Must match animation duration
+            return () => clearTimeout(timer);
+        }
+
+        // Cleanup effect
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
+    if (!shouldRender) return null;
+
+    return (
+        <div 
+            className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8"
+            aria-modal="true"
+            role="dialog"
+        >
+            <div 
+                className={`fixed inset-0 bg-black/60 ${isOpen ? 'animate-fade-in' : 'animate-fade-out'}`}
+                onClick={onClose}
+                aria-hidden="true"
+            ></div>
+
+            <div className={`relative z-10 w-full max-w-xs flex flex-col items-center gap-4 ${isOpen ? 'animate-slide-down' : 'animate-fade-out'}`}>
+                <div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full">
+                    <div className="p-6 text-center">
+                        <h2 className="text-xl font-bold text-blue-900">Rincian Biaya</h2>
+                        <p className="mt-2 text-slate-500">
+                            Total Biaya <span className="font-bold text-sky-500">Rp200.000,-</span>
+                        </p>
+                    </div>
+                    <div className="border-t border-slate-100 mx-4"></div>
+                    <div className="p-6">
+                        <div className="flex justify-between items-center text-slate-600">
+                            <span className="text-md">Survey Lokasi</span>
+                            <span className="font-semibold text-md text-slate-800">Rp200.000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button
+                    onClick={onClose}
+                    className="bg-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                    aria-label="Tutup"
+                >
+                    <XIcon className="w-6 h-6 text-slate-800" />
+                </button>
+            </div>
+        </div>
+    );
+};
+
+export default CostDetailsModal;

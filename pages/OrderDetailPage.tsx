@@ -7,10 +7,12 @@ import ClockIcon from '../components/icons/ClockIcon';
 import ShieldCheckIcon from '../components/icons/ShieldCheckIcon';
 import ChatBubbleLeftRightIcon from '../components/icons/ChatBubbleLeftRightIcon';
 import CurrencyDollarIcon from '../components/icons/CurrencyDollarIcon';
+import PencilIcon from '../components/icons/PencilIcon';
 
 interface OrderDetailPageProps {
     order: Order;
     onBack: () => void;
+    onEdit: () => void;
 }
 
 const TimelineStep: React.FC<{ title: string; date: string; status: 'completed' | 'in_progress' | 'pending'; isLast?: boolean }> = ({ title, date, status, isLast = false }) => {
@@ -19,26 +21,29 @@ const TimelineStep: React.FC<{ title: string; date: string; status: 'completed' 
             dot: 'bg-blue-800 border-blue-800',
             text: 'text-slate-800 font-semibold',
             date: 'text-slate-600',
+            line: 'bg-blue-800',
         },
         in_progress: {
-            dot: 'bg-white border-blue-800 ring-4 ring-blue-200',
+            dot: 'bg-white border-4 border-blue-800',
             text: 'text-blue-800 font-bold',
-            date: 'text-blue-800',
+            date: 'text-blue-800 font-semibold',
+            line: 'bg-slate-200',
         },
         pending: {
             dot: 'bg-slate-200 border-slate-300',
             text: 'text-slate-500',
             date: 'text-slate-500',
+            line: 'bg-slate-200',
         },
     };
     
     return (
         <div className="flex space-x-4">
-            <div className="flex flex-col items-center">
-                <div className={`w-5 h-5 rounded-full border-2 ${statusClasses[status].dot} z-10`}></div>
-                {!isLast && <div className={`w-0.5 flex-grow ${status === 'completed' ? 'bg-blue-800' : 'bg-slate-300'}`}></div>}
+            <div className="flex flex-col items-center -mt-1">
+                <div className={`w-6 h-6 rounded-full border-2 ${statusClasses[status].dot} z-10 flex-shrink-0`}></div>
+                {!isLast && <div className={`w-0.5 flex-grow ${statusClasses[status].line} -mt-1`}></div>}
             </div>
-            <div className="pb-8 -mt-1">
+            <div className="pb-8 -mt-2">
                 <p className={`text-md ${statusClasses[status].text}`}>{title}</p>
                 <p className={`text-sm ${statusClasses[status].date}`}>{date}</p>
             </div>
@@ -46,7 +51,7 @@ const TimelineStep: React.FC<{ title: string; date: string; status: 'completed' 
     );
 };
 
-const OrderDetailPage: React.FC<OrderDetailPageProps> = ({ order, onBack }) => {
+const OrderDetailPage: React.FC<OrderDetailPageProps> = ({ order, onBack, onEdit }) => {
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
     };
@@ -60,15 +65,18 @@ const OrderDetailPage: React.FC<OrderDetailPageProps> = ({ order, onBack }) => {
                         <ChevronLeftIcon className="w-6 h-6 text-slate-700" />
                     </button>
                     <h1 className="text-lg font-bold text-center w-full text-slate-800">Detail Pesanan</h1>
+                    <button onClick={onEdit} className="absolute right-2 p-2 rounded-full hover:bg-slate-100" aria-label="Ubah Pesanan">
+                        <PencilIcon className="w-5 h-5 text-slate-700" />
+                    </button>
                 </div>
             </header>
 
             <main className="flex-grow p-4 space-y-4 pb-28">
-                <section className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                    <div className="flex justify-between items-center">
+                <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <div className="flex justify-between items-start">
                         <div>
-                            <p className="text-xs font-semibold text-orange-600">{order.id}</p>
-                            <h2 className="text-xl font-bold text-slate-800 mt-1">{order.serviceName}</h2>
+                            <span className="text-xs font-semibold bg-slate-100 text-slate-600 py-1 px-2 rounded-full">{order.id}</span>
+                            <h2 className="text-xl font-bold text-slate-900 mt-2">{order.serviceName}</h2>
                         </div>
                          <div className={`text-sm font-semibold py-1.5 px-3 rounded-full flex items-center space-x-1.5 ${isCompleted ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
                             {isCompleted ? <CheckCircleIcon className="w-5 h-5" /> : <ClockIcon className="w-5 h-5" />}
@@ -77,9 +85,9 @@ const OrderDetailPage: React.FC<OrderDetailPageProps> = ({ order, onBack }) => {
                     </div>
                 </section>
                 
-                <section className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                      <h3 className="font-bold text-slate-800 mb-4">Penyedia Jasa</h3>
-                     <div className="flex items-center space-x-3">
+                     <div className="flex items-center space-x-4">
                         <img src={order.provider.avatar} alt={order.provider.name} className="w-12 h-12 rounded-full" />
                         <div className="flex-1">
                             <div className="flex items-center space-x-1.5">
@@ -92,9 +100,9 @@ const OrderDetailPage: React.FC<OrderDetailPageProps> = ({ order, onBack }) => {
                 </section>
 
                 {order.timeline && (
-                    <section className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                         <h3 className="font-bold text-slate-800 mb-4">Linimasa Pengerjaan</h3>
-                        <div>
+                        <div className="mt-2">
                             {order.timeline.map((step, index) => (
                                 <TimelineStep key={index} {...step} isLast={index === (order.timeline?.length ?? 0) - 1} />
                             ))}
@@ -103,12 +111,12 @@ const OrderDetailPage: React.FC<OrderDetailPageProps> = ({ order, onBack }) => {
                 )}
 
                 {order.costDetails && (
-                    <section className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                         <div className="flex items-center space-x-3 mb-4">
                             <CurrencyDollarIcon className="w-6 h-6 text-green-600" />
                             <h3 className="font-bold text-slate-800">Rincian Biaya</h3>
                         </div>
-                        <div className="space-y-2 text-sm">
+                        <div className="space-y-3 text-sm">
                             <div className="flex justify-between">
                                 <span className="text-slate-600">Biaya Jasa</span>
                                 <span className="font-medium text-slate-800">{formatCurrency(order.costDetails.service)}</span>
@@ -119,10 +127,11 @@ const OrderDetailPage: React.FC<OrderDetailPageProps> = ({ order, onBack }) => {
                                     <span className="font-medium text-slate-800">{formatCurrency(order.costDetails.materials)}</span>
                                 </div>
                             )}
-                            <div className="border-t border-slate-200 my-2"></div>
-                            <div className="flex justify-between font-bold text-md">
-                                <span className="text-slate-800">Total</span>
-                                <span className="text-blue-800">{formatCurrency(order.costDetails.total)}</span>
+                            <div className="border-t border-slate-200 my-2 pt-3">
+                                <div className="flex justify-between font-bold text-md">
+                                    <span className="text-slate-800">Total</span>
+                                    <span className="text-blue-800">{formatCurrency(order.costDetails.total)}</span>
+                                </div>
                             </div>
                         </div>
                     </section>

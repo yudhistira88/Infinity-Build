@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import UserIcon from '../components/icons/UserIcon';
 import CogIcon from '../components/icons/CogIcon';
 import QuestionMarkCircleIcon from '../components/icons/QuestionMarkCircleIcon';
@@ -11,6 +12,7 @@ import HelpCenterPage from './HelpCenterPage';
 
 interface ProfilePageProps {
     onLogout: () => void;
+    setBottomNavVisible: (visible: boolean) => void;
 }
 
 const ProfileMenuItem: React.FC<{ icon: React.ReactNode; label: string; onClick?: () => void; }> = ({ icon, label, onClick }) => (
@@ -24,8 +26,12 @@ const ProfileMenuItem: React.FC<{ icon: React.ReactNode; label: string; onClick?
 );
 
 
-const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
+const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout, setBottomNavVisible }) => {
     const [view, setView] = useState<'main' | 'edit' | 'settings' | 'help'>('main');
+
+    useEffect(() => {
+        setBottomNavVisible(view === 'main');
+    }, [view, setBottomNavVisible]);
 
     if (view === 'edit') {
         return <EditProfilePage onBack={() => setView('main')} />;

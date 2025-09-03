@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo, useEffect } from 'react';
 import BottomNav from './components/BottomNav';
 import HomePage from './pages/HomePage';
@@ -14,6 +15,7 @@ import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import SurveyBookingPage from './pages/SurveyBookingPage';
 
 const initialMessagesData: Message[] = [
     { 
@@ -81,6 +83,7 @@ const App: React.FC = () => {
 
   const handleNavigate = (page: string) => {
     setActivePage(page);
+    setBottomNavVisible(true); // Ensure nav is visible on main page navigation
   };
 
   const handleOpenEstimator = () => {
@@ -116,13 +119,15 @@ const App: React.FC = () => {
       case 'Layanan':
         return <HomePage onNavigate={handleNavigate} setBottomNavVisible={setBottomNavVisible} />;
       case 'Pesanan':
-        return <OrdersPage />;
+        return <OrdersPage setBottomNavVisible={setBottomNavVisible} />;
       case 'Pesan':
-        return <MessagesPage messages={messages} onReadMessage={handleReadMessage} />;
+        return <MessagesPage messages={messages} onReadMessage={handleReadMessage} setBottomNavVisible={setBottomNavVisible} />;
       case 'Profil':
-        return <ProfilePage onLogout={handleLogout}/>;
+        return <ProfilePage onLogout={handleLogout} setBottomNavVisible={setBottomNavVisible} />;
       case 'Estimasi':
         return <EstimationPage onBack={() => { setActivePage('Layanan'); setBottomNavVisible(true); }} />;
+      case 'Bangun & Renovasi':
+        return <SurveyBookingPage categoryName="Bangun & Renovasi" onBack={() => setActivePage('Layanan')} location={{id: '1', name: 'Rumah', address: 'Pabuaran, Bogor'}} />;
       default:
         return <HomePage onNavigate={handleNavigate} setBottomNavVisible={setBottomNavVisible} />;
     }

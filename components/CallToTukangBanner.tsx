@@ -17,8 +17,8 @@ const CallToTukangBanner: React.FC<CallToTukangBannerProps> = ({ onCallClick }) 
                     </div>
                     
                     <div className="flex-1">
-                        <h3 className="font-bold text-white text-md leading-tight">Butuh Tukang Cepat?</h3>
-                        <p className="text-sm text-blue-200">Layanan darurat & harian tersedia.</p>
+                        <h3 className="font-bold text-white text-md leading-tight">Cari Tukang?</h3>
+                        <p className="text-sm text-blue-200">Klik Sekarang, Tukang Datang!</p>
                     </div>
                 </div>
 

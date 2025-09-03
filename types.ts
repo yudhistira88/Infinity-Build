@@ -14,7 +14,7 @@ export interface Service {
   description?: string;
 }
 
-export type OrderStatus = 'In Progress' | 'Completed';
+export type OrderStatus = 'Waiting for Payment' | 'Survey' | 'In Progress' | 'Warranty Period' | 'Completed' | 'Cancelled';
 
 export interface OrderTimelineStep {
   title: string;

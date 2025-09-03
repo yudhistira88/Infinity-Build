@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import type { BannerSlide } from '../types';
 import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
@@ -7,9 +8,10 @@ interface PromoPageProps {
   promo: BannerSlide;
   allPromos: BannerSlide[];
   onBack: () => void;
+  onUsePromo?: (promo: BannerSlide) => void;
 }
 
-const PromoPage: React.FC<PromoPageProps> = ({ promo, allPromos, onBack }) => {
+const PromoPage: React.FC<PromoPageProps> = ({ promo, allPromos, onBack, onUsePromo }) => {
   const [activeTab, setActiveTab] = useState<'detail' | 'all'>('detail');
   const [currentPromo, setCurrentPromo] = useState<BannerSlide>(promo);
 
@@ -90,7 +92,10 @@ const PromoPage: React.FC<PromoPageProps> = ({ promo, allPromos, onBack }) => {
       </main>
 
        <div className="fixed bottom-0 left-0 right-0 max-w-sm mx-auto p-4 bg-white/80 backdrop-blur-sm border-t border-slate-200 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-          <button className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-4 px-5 rounded-xl shadow-lg shadow-orange-600/30 hover:shadow-xl hover:brightness-110 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+          <button 
+            onClick={() => onUsePromo && onUsePromo(currentPromo)}
+            disabled={!onUsePromo}
+            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-4 px-5 rounded-xl shadow-lg shadow-orange-600/30 hover:shadow-xl hover:brightness-110 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed">
               Gunakan Promo Ini
           </button>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import type { Service } from '../types';
+import type { Service, Location } from '../types';
 import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
 import SearchIcon from '../components/icons/SearchIcon';
 import XIcon from '../components/icons/XIcon';
@@ -9,11 +9,13 @@ import ServiceDetailPage from './ServiceDetailPage';
 interface SearchPageProps {
     allServices: Service[];
     onBack: () => void;
+    location: Location;
+    onNavigate: (page: string) => void;
 }
 
 const popularSearches = ['Renovasi Rumah', 'Atap Bocor', 'Pengecatan', 'Listrik', 'Canopy'];
 
-const SearchPage: React.FC<SearchPageProps> = ({ allServices, onBack }) => {
+const SearchPage: React.FC<SearchPageProps> = ({ allServices, onBack, location, onNavigate }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedService, setSelectedService] = useState<Service | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -34,7 +36,7 @@ const SearchPage: React.FC<SearchPageProps> = ({ allServices, onBack }) => {
     }, [allServices, searchQuery]);
 
     if (selectedService) {
-        return <ServiceDetailPage service={selectedService} onBack={() => setSelectedService(null)} />;
+        return <ServiceDetailPage service={selectedService} onBack={() => setSelectedService(null)} location={location} onNavigate={onNavigate} />;
     }
 
     const renderInitialState = () => (

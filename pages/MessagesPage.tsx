@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import type { Message } from '../types';
 import SearchIcon from '../components/icons/SearchIcon';
 import ChatPage from './ChatPage';
@@ -28,10 +29,15 @@ const MessageItem: React.FC<{ message: Message; onClick: () => void }> = ({ mess
 interface MessagesPageProps {
     messages: Message[];
     onReadMessage: (messageId: string) => void;
+    setBottomNavVisible: (visible: boolean) => void;
 }
 
-const MessagesPage: React.FC<MessagesPageProps> = ({ messages, onReadMessage }) => {
+const MessagesPage: React.FC<MessagesPageProps> = ({ messages, onReadMessage, setBottomNavVisible }) => {
     const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+
+    useEffect(() => {
+        setBottomNavVisible(!selectedMessage);
+    }, [selectedMessage, setBottomNavVisible]);
 
     const handleSelectMessage = (message: Message) => {
         if (message.unreadCount > 0) {

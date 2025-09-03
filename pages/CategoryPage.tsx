@@ -1,6 +1,5 @@
-
 import React, { useState, useMemo } from 'react';
-import type { Service } from '../types';
+import type { Service, Location } from '../types';
 import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
 import SearchIcon from '../components/icons/SearchIcon';
 import ServiceDetailPage from './ServiceDetailPage';
@@ -9,6 +8,8 @@ interface CategoryPageProps {
     categoryName: string;
     services: Service[];
     onBack: () => void;
+    location: Location;
+    onNavigate: (page: string) => void;
 }
 
 const ServiceListCard: React.FC<{ service: Service; onClick: () => void }> = ({ service, onClick }) => (
@@ -21,7 +22,7 @@ const ServiceListCard: React.FC<{ service: Service; onClick: () => void }> = ({ 
     </button>
 );
 
-const CategoryPage: React.FC<CategoryPageProps> = ({ categoryName, services, onBack }) => {
+const CategoryPage: React.FC<CategoryPageProps> = ({ categoryName, services, onBack, location, onNavigate }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedService, setSelectedService] = useState<Service | null>(null);
 
@@ -33,7 +34,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ categoryName, services, onB
     }, [services, searchQuery]);
     
     if (selectedService) {
-        return <ServiceDetailPage service={selectedService} onBack={() => setSelectedService(null)} />;
+        return <ServiceDetailPage service={selectedService} onBack={() => setSelectedService(null)} location={location} onNavigate={onNavigate} />;
     }
 
     return (
