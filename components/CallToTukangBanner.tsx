@@ -8,7 +8,7 @@ interface CallToTukangBannerProps {
 
 const CallToTukangBanner: React.FC<CallToTukangBannerProps> = ({ onCallClick }) => {
     return (
-        <div className="px-4 pt-4 pb-0">
+        <div className="px-4 py-4">
             <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-xl p-4 flex items-center justify-between gap-4 shadow-lg shadow-blue-800/30">
                 
                 <div className="flex items-center gap-4 flex-1 min-w-0">
