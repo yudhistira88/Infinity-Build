@@ -57,7 +57,8 @@ const EditableFormField: React.FC<{
     rows?: number;
     options?: string[];
     id: string;
-}> = ({ icon, label, value, onChange, isOptional, type = 'text', placeholder, rows, options, id }) => {
+    notification?: React.ReactNode;
+}> = ({ icon, label, value, onChange, isOptional, type = 'text', placeholder, rows, options, id, notification }) => {
     
     const commonInputClasses = "w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-800 focus:border-transparent transition-all";
     
@@ -94,6 +95,7 @@ const EditableFormField: React.FC<{
             </label>
             <div className="pl-9">
                 {renderInput()}
+                {notification}
             </div>
         </div>
     );
@@ -304,6 +306,17 @@ const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ cat
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
     };
     
+    const SurchargeNotification: React.FC = () => (
+        <div className="pt-2 animate-fade-in-up">
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 p-3 rounded-r-lg text-sm flex items-start space-x-2">
+                <InformationCircleIcon className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <div>
+                    <span className="font-semibold">Info Biaya Tambahan:</span> Akan dikenakan biaya tambahan sebesar <span className="font-bold">{formatCurrency(PROPERTY_SURCHARGE)}</span> untuk survei properti selain Rumah.
+                </div>
+            </div>
+        </div>
+    );
+
     // State for Bangun / Renovasi forms
     const [bangunData, setBangunData] = useState({
         jenisProperti: initialData.jenisProperti || 'Rumah',
@@ -447,7 +460,16 @@ const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ cat
     
     const renderBangunForm = () => (
         <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 divide-y divide-slate-100 animate-fade-in-up">
-            <EditableFormField id="jenisProperti" icon={<BuildingOfficeIcon className="w-6 h-6" />} label="Jenis Properti*" value={bangunData.jenisProperti} onChange={handleBangunChange} type="select" options={['Rumah', 'Ruko', 'Apartemen', 'Gudang', 'Kantor']} />
+            <EditableFormField 
+                id="jenisProperti" 
+                icon={<BuildingOfficeIcon className="w-6 h-6" />} 
+                label="Jenis Properti*" 
+                value={bangunData.jenisProperti} 
+                onChange={handleBangunChange} 
+                type="select" 
+                options={['Rumah', 'Ruko', 'Apartemen', 'Gudang', 'Kantor']} 
+                notification={bangunData.jenisProperti !== 'Rumah' ? <SurchargeNotification /> : null}
+            />
             <EditableFormField id="jumlahLantai" icon={<BuildingLibraryIcon className="w-6 h-6" />} label="Jumlah Lantai*" value={bangunData.jumlahLantai} onChange={handleBangunChange} type="select" options={['1 Lantai', '2 Lantai', '3 Lantai', '4+ Lantai']} />
             <EditableFormField id="luasTanah" icon={<ArrowsPointingOutIcon className="w-6 h-6" />} label="Luas Tanah (m²)*" value={bangunData.luasTanah} onChange={handleBangunChange} type="number" placeholder="Contoh: 100" />
             <EditableFormField id="luasBangunan" icon={<ArrowsPointingOutIcon className="w-6 h-6" />} label="Luas Bangunan (m²)*" value={bangunData.luasBangunan} onChange={handleBangunChange} type="number" placeholder="Contoh: 80" />
@@ -459,7 +481,15 @@ const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ cat
 
     const renderRenovasiForm = () => (
          <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 divide-y divide-slate-100 animate-fade-in-up">
-            <EditableFormField id="jenisProperti" icon={<BuildingOfficeIcon className="w-6 h-6" />} label="Jenis Properti*" value={renovasiData.jenisProperti} onChange={handleRenovasiChange} type="select" options={['Rumah', 'Ruko', 'Apartemen', 'Gudang', 'Kantor']} />
+            <EditableFormField 
+                id="jenisProperti" 
+                icon={<BuildingOfficeIcon className="w-6 h-6" />} 
+                label="Jenis Properti*" 
+                value={renovasiData.jenisProperti} 
+                onChange={handleRenovasiChange} 
+                type="select" options={['Rumah', 'Ruko', 'Apartemen', 'Gudang', 'Kantor']} 
+                notification={renovasiData.jenisProperti !== 'Rumah' ? <SurchargeNotification /> : null}
+            />
             <EditableFormField id="ruanganDirenovasi" icon={<Squares2x2Icon className="w-6 h-6" />} label="Ruangan yang Direnovasi*" value={renovasiData.ruanganDirenovasi} onChange={handleRenovasiChange} type="text" placeholder="Contoh: Dapur, Kamar Mandi" />
             <EditableFormField id="detailPekerjaan" icon={<DocumentTextIcon className="w-6 h-6" />} label="Detail Pekerjaan*" value={renovasiData.detailPekerjaan} onChange={handleRenovasiChange} type="textarea" placeholder="Contoh: Ganti keramik, perbaiki atap bocor" />
             <EditableFormField id="estimasiLuas" icon={<ArrowsPointingOutIcon className="w-6 h-6" />} label="Estimasi Luas Renovasi (m²)" value={renovasiData.estimasiLuas} onChange={handleRenovasiChange} isOptional type="number" placeholder="Contoh: 25" />
@@ -470,7 +500,16 @@ const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ cat
     
     const renderInteriorForm = () => (
         <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 divide-y divide-slate-100 animate-fade-in-up">
-            <EditableFormField id="jenisProperti" icon={<BuildingOfficeIcon className="w-6 h-6" />} label="Jenis Properti*" value={interiorData.jenisProperti} onChange={handleInteriorChange} type="select" options={['Rumah', 'Apartemen', 'Kantor', 'Ruko']} />
+            <EditableFormField 
+                id="jenisProperti" 
+                icon={<BuildingOfficeIcon className="w-6 h-6" />} 
+                label="Jenis Properti*" 
+                value={interiorData.jenisProperti} 
+                onChange={handleInteriorChange} 
+                type="select" 
+                options={['Rumah', 'Apartemen', 'Kantor', 'Ruko']}
+                notification={interiorData.jenisProperti !== 'Rumah' ? <SurchargeNotification /> : null}
+            />
             <EditableFormField id="ruangan" icon={<Squares2x2Icon className="w-6 h-6" />} label="Ruangan yang Dikerjakan*" value={interiorData.ruangan} onChange={handleInteriorChange} type="text" placeholder="Contoh: Ruang Tamu, Kamar Tidur" />
             <EditableFormField id="gayaDesain" icon={<PencilIcon className="w-6 h-6" />} label="Gaya Desain" value={interiorData.gayaDesain} onChange={handleInteriorChange} isOptional type="text" placeholder="Contoh: Minimalis, Industrial" />
             <EditableFormField id="detailPekerjaan" icon={<DocumentTextIcon className="w-6 h-6" />} label="Detail Pekerjaan*" value={interiorData.detailPekerjaan} onChange={handleInteriorChange} type="textarea" placeholder="Contoh: Pengecatan, pasang wallpaper" />
@@ -482,7 +521,16 @@ const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ cat
     
     const renderEksteriorForm = () => (
         <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 divide-y divide-slate-100 animate-fade-in-up">
-            <EditableFormField id="jenisProperti" icon={<BuildingOfficeIcon className="w-6 h-6" />} label="Jenis Properti*" value={eksteriorData.jenisProperti} onChange={handleEksteriorChange} type="select" options={['Rumah', 'Ruko', 'Gedung']} />
+            <EditableFormField 
+                id="jenisProperti" 
+                icon={<BuildingOfficeIcon className="w-6 h-6" />} 
+                label="Jenis Properti*" 
+                value={eksteriorData.jenisProperti} 
+                onChange={handleEksteriorChange} 
+                type="select" 
+                options={['Rumah', 'Ruko', 'Gedung']} 
+                notification={eksteriorData.jenisProperti !== 'Rumah' ? <SurchargeNotification /> : null}
+            />
             <EditableFormField id="areaEksterior" icon={<Squares2x2Icon className="w-6 h-6" />} label="Area yang Dikerjakan*" value={eksteriorData.areaEksterior} onChange={handleEksteriorChange} type="text" placeholder="Contoh: Fasad, Pagar, Taman" />
             <EditableFormField id="detailPekerjaan" icon={<DocumentTextIcon className="w-6 h-6" />} label="Detail Pekerjaan*" value={eksteriorData.detailPekerjaan} onChange={handleEksteriorChange} type="textarea" placeholder="Contoh: Pengecatan ulang, perbaikan taman" />
             <EditableFormField id="estimasiLuas" icon={<ArrowsPointingOutIcon className="w-6 h-6" />} label="Estimasi Luas (m²)" value={eksteriorData.estimasiLuas} onChange={handleEksteriorChange} isOptional type="number" placeholder="Contoh: 50" />
@@ -492,7 +540,16 @@ const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ cat
     
     const renderKitchenSetForm = () => (
         <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 divide-y divide-slate-100 animate-fade-in-up">
-            <EditableFormField id="jenisProperti" icon={<BuildingOfficeIcon className="w-6 h-6" />} label="Jenis Properti*" value={kitchenSetData.jenisProperti} onChange={handleKitchenSetChange} type="select" options={['Rumah', 'Apartemen']} />
+            <EditableFormField 
+                id="jenisProperti" 
+                icon={<BuildingOfficeIcon className="w-6 h-6" />} 
+                label="Jenis Properti*" 
+                value={kitchenSetData.jenisProperti} 
+                onChange={handleKitchenSetChange} 
+                type="select" 
+                options={['Rumah', 'Apartemen']} 
+                notification={kitchenSetData.jenisProperti !== 'Rumah' ? <SurchargeNotification /> : null}
+            />
             <EditableFormField id="bentukDapur" icon={<Squares2x2Icon className="w-6 h-6" />} label="Bentuk Dapur*" value={kitchenSetData.bentukDapur} onChange={handleKitchenSetChange} type="select" options={['L-Shape', 'U-Shape', 'Island', 'Linear']} />
             <EditableFormField id="material" icon={<CubeTransparentIcon className="w-6 h-6" />} label="Material yang Diinginkan*" value={kitchenSetData.material} onChange={handleKitchenSetChange} type="text" placeholder="Contoh: HPL, Duco, Kayu Jati" />
             <EditableFormField id="estimasiUkuran" icon={<ArrowsPointingOutIcon className="w-6 h-6" />} label="Estimasi Ukuran (meter)" value={kitchenSetData.estimasiUkuran} onChange={handleKitchenSetChange} isOptional type="text" placeholder="Contoh: 3m x 2m" />
