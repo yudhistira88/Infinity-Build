@@ -19,9 +19,12 @@ interface SurveyConfirmationPageProps {
 const SurveyConfirmationPage: React.FC<SurveyConfirmationPageProps> = ({ surveyData, onBack, onNext, onSelectPromo }) => {
     const [isConfirmModalOpen, setConfirmModalOpen] = useState(false);
 
-    const surveyCost = 200000;
+    const baseSurveyCost = 200000;
+    const totalSurveyCost = surveyData.totalCost || baseSurveyCost;
+    const surcharge = totalSurveyCost - baseSurveyCost;
     const discount = surveyData.promo?.discountAmount || 0;
-    const total = surveyCost - discount;
+    const total = totalSurveyCost - discount;
+
 
     const formatDate = (dateString: string, timeSlot: string) => {
         if (!dateString || !timeSlot) return "Jadwal belum diatur";
@@ -136,7 +139,10 @@ const SurveyConfirmationPage: React.FC<SurveyConfirmationPageProps> = ({ surveyD
                         <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
                             <h2 className="font-bold text-slate-800 mb-3">Ringkasan Biaya</h2>
                             <div className="space-y-2 text-sm border-t border-slate-100 pt-3">
-                                <div className="flex justify-between"><span className="text-slate-500">Survey Lokasi</span><span className="font-semibold text-slate-800">{formatCurrency(surveyCost)}</span></div>
+                                <div className="flex justify-between"><span className="text-slate-500">Survey Lokasi</span><span className="font-semibold text-slate-800">{formatCurrency(baseSurveyCost)}</span></div>
+                                {surcharge > 0 && (
+                                    <div className="flex justify-between"><span className="text-slate-500">Biaya Tambahan (Non-Rumah)</span><span className="font-semibold text-slate-800">{formatCurrency(surcharge)}</span></div>
+                                )}
                                 {surveyData.promo && (
                                     <div className="flex justify-between"><span className="text-slate-500">{surveyData.promo.name}</span><span className="font-semibold text-green-600">-{formatCurrency(discount)}</span></div>
                                 )}

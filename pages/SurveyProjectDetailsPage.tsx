@@ -295,6 +295,14 @@ const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ cat
     const [jobType, setJobType] = useState(initialData.jobType || jobTypesToShow[0].id);
     const [photos, setPhotos] = useState<File[]>(initialData.photos || []);
     const [documents, setDocuments] = useState<File[]>(initialData.documents || []);
+    const [totalCost, setTotalCost] = useState(initialData.totalCost || 200000);
+
+    const SURVEY_BASE_COST = 200000;
+    const PROPERTY_SURCHARGE = 20000;
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+    };
     
     // State for Bangun / Renovasi forms
     const [bangunData, setBangunData] = useState({
@@ -374,6 +382,29 @@ const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ cat
         setFurnitureData(prev => ({ ...prev, [id]: value }));
     };
 
+    const activeFormData = useMemo(() => {
+        if (categoryName === 'Interior / Eksterior') {
+            switch (jobType) {
+                case 'Interior': return interiorData;
+                case 'Eksterior': return eksteriorData;
+                case 'Kitchen Set': return kitchenSetData;
+                case 'Furniture': return null;
+                default: return null;
+            }
+        }
+        return jobType === 'Bangun' ? bangunData : renovasiData;
+    }, [categoryName, jobType, bangunData, renovasiData, interiorData, eksteriorData, kitchenSetData]);
+
+    useEffect(() => {
+        let cost = SURVEY_BASE_COST;
+        const propertyType = activeFormData?.jenisProperti;
+        
+        if (propertyType && propertyType !== 'Rumah') {
+            cost += PROPERTY_SURCHARGE;
+        }
+        setTotalCost(cost);
+    }, [activeFormData]);
+
     const isFormValid = useMemo(() => {
         if (categoryName === 'Interior / Eksterior') {
             switch (jobType) {
@@ -411,7 +442,7 @@ const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ cat
         } else {
             dataToPass = jobType === 'Bangun' ? bangunData : renovasiData;
         }
-        onNext({ jobType, ...dataToPass, photos, documents });
+        onNext({ jobType, ...dataToPass, photos, documents, totalCost });
     };
     
     const renderBangunForm = () => (
@@ -507,7 +538,7 @@ const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ cat
                         <div className="text-center w-full">
                             <h1 className="text-lg font-bold text-slate-800">{categoryName}</h1>
                              <button onClick={() => setIsCostModalOpen(true)} className="flex items-center justify-center mx-auto text-sm text-slate-500 font-semibold hover:bg-slate-100 p-1 rounded-md transition-colors">
-                                Total Biaya <span className="font-bold text-blue-800 mx-1">Rp200.000,-</span>
+                                Total Biaya <span className="font-bold text-blue-800 mx-1">{formatCurrency(totalCost)}</span>
                                 <ChevronDownIcon className="w-4 h-4" />
                             </button>
                         </div>
@@ -548,7 +579,9 @@ const SurveyProjectDetailsPage: React.FC<SurveyProjectDetailsPageProps> = ({ cat
             </div>
             <CostDetailsModal 
                 isOpen={isCostModalOpen} 
-                onClose={() => setIsCostModalOpen(false)} 
+                onClose={() => setIsCostModalOpen(false)}
+                baseCost={SURVEY_BASE_COST}
+                surcharge={totalCost > SURVEY_BASE_COST ? PROPERTY_SURCHARGE : 0}
             />
         </>
     );

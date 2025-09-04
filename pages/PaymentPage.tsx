@@ -71,9 +71,11 @@ const PaymentPage: React.FC<PaymentPageProps> = ({ surveyData, onBack, onPayment
         return `JBS-${datePart}-${randomPart}`;
     }, []);
 
-    const surveyCost = 200000;
+    const baseSurveyCost = 200000;
+    const totalSurveyCost = surveyData.totalCost || baseSurveyCost;
+    const surcharge = totalSurveyCost - baseSurveyCost;
     const discount = surveyData.promo?.discountAmount || 0;
-    const totalAmount = surveyCost - discount;
+    const totalAmount = totalSurveyCost - discount;
 
     useEffect(() => {
         if (timeLeft <= 0) return;
@@ -176,14 +178,26 @@ const PaymentPage: React.FC<PaymentPageProps> = ({ surveyData, onBack, onPayment
                             <div className="space-y-2 text-sm border-t border-slate-100 pt-3">
                                 <div className="flex justify-between">
                                     <span className="text-slate-500">Survey Lokasi</span>
-                                    <span className="font-semibold text-slate-800">{formatCurrency(surveyCost)}</span>
+                                    <span className="font-semibold text-slate-800">{formatCurrency(baseSurveyCost)}</span>
                                 </div>
+                                {surcharge > 0 && (
+                                     <div className="flex justify-between">
+                                        <span className="text-slate-500">Biaya Tambahan (Non-Rumah)</span>
+                                        <span className="font-semibold text-slate-800">{formatCurrency(surcharge)}</span>
+                                    </div>
+                                )}
                                 {surveyData.promo && (
                                     <div className="flex justify-between">
                                         <span className="text-slate-500">{surveyData.promo.name}</span>
                                         <span className="font-semibold text-green-600">-{formatCurrency(discount)}</span>
                                     </div>
                                 )}
+                                <div className="border-t border-slate-200 pt-3 mt-3">
+                                    <div className="flex justify-between font-bold text-md">
+                                        <span className="text-slate-800">Total Pembayaran</span>
+                                        <span className="text-blue-800">{formatCurrency(totalAmount)}</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

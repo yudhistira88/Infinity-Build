@@ -56,6 +56,14 @@ const SurveyLocationPage: React.FC<SurveyLocationPageProps> = ({ categoryName, o
         waktu: initialData.waktu || allTimeSlots[0],
     });
 
+    const totalCost = initialData.totalCost || 200000;
+    const SURVEY_BASE_COST = 200000;
+    const PROPERTY_SURCHARGE = 20000;
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+    };
+
     const availableTimeSlots = useMemo(() => {
         return allTimeSlots.map(slot => {
             const isBooked = bookedSlots.some(
@@ -114,6 +122,7 @@ const SurveyLocationPage: React.FC<SurveyLocationPageProps> = ({ categoryName, o
         onNext({
             ...formData,
             location: selectedLocation,
+            totalCost: totalCost,
         });
     };
     
@@ -130,7 +139,7 @@ const SurveyLocationPage: React.FC<SurveyLocationPageProps> = ({ categoryName, o
                         <div className="text-center w-full">
                             <h1 className="text-lg font-bold text-slate-800">{categoryName}</h1>
                              <button onClick={() => setIsCostModalOpen(true)} className="flex items-center justify-center mx-auto text-sm text-slate-500 font-semibold hover:bg-slate-100 p-1 rounded-md transition-colors">
-                                Total Biaya <span className="font-bold text-blue-800 mx-1">Rp200.000,-</span>
+                                Total Biaya <span className="font-bold text-blue-800 mx-1">{formatCurrency(totalCost)}</span>
                                 <ChevronDownIcon className="w-4 h-4" />
                             </button>
                         </div>
@@ -248,6 +257,8 @@ const SurveyLocationPage: React.FC<SurveyLocationPageProps> = ({ categoryName, o
             <CostDetailsModal 
                 isOpen={isCostModalOpen} 
                 onClose={() => setIsCostModalOpen(false)} 
+                baseCost={SURVEY_BASE_COST}
+                surcharge={totalCost > SURVEY_BASE_COST ? PROPERTY_SURCHARGE : 0}
             />
             {isLocationModalOpen && (
                 <LocationModal 
