@@ -55,7 +55,7 @@ const ServiceCategories: React.FC<ServiceCategoriesProps> = ({ onCategorySelect 
         { name: 'Bangun / Renovasi', icon: <HomeModernIcon />, iconColor: 'text-cyan-600' },
         { name: 'Repair Maintenance', icon: <WrenchScrewdriverIcon />, iconColor: 'text-sky-600' },
         { name: 'Pabrikasi', icon: <CogIcon />, iconColor: 'text-slate-600' },
-        { name: 'Interior', icon: <PencilIcon />, iconColor: 'text-purple-600' },
+        { name: 'Interior / Eksterior', icon: <PencilIcon />, iconColor: 'text-purple-600' },
         { name: 'Panggil Tukang', icon: <PhoneArrowUpRightIcon />, iconColor: 'text-green-600' },
     ];
 

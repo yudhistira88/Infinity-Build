@@ -87,3 +87,10 @@ export interface Location {
   name: string;
   address: string;
 }
+
+export interface JobType {
+  name: string;
+  image: string;
+  categoryLink: string; 
+  description: string;
+}

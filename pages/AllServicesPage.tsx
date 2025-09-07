@@ -1,17 +1,10 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import DotsGridIcon from '../components/icons/DotsGridIcon';
 import ListIcon from '../components/icons/ListIcon';
 import ChevronRightIcon from '../components/icons/ChevronRightIcon';
 import { popularServicesData } from '../data/services';
-import type { Service } from '../types';
-
-interface JobType {
-  name: string;
-  image: string;
-  categoryLink: string; 
-  description: string;
-}
+import type { Service, JobType } from '../types';
+import SurveyConfirmationModal from '../components/SurveyConfirmationModal';
 
 interface ServiceGroup {
   groupName: string;
@@ -57,12 +50,12 @@ const originalServiceGroupsData: ServiceGroup[] = [
         ]
     },
     {
-        groupName: 'Interior',
+        groupName: 'Interior / Eksterior',
         jobTypes: [
-            { name: 'Interior', image: 'https://picsum.photos/seed/interior/200/200', categoryLink: 'Interior', description: 'Desain dan pengerjaan interior ruangan.' },
-            { name: 'Eksterior', image: 'https://picsum.photos/seed/eksterior/200/200', categoryLink: 'Interior', description: 'Desain dan pengerjaan eksterior bangunan.' },
-            { name: 'Kitchen Set', image: 'https://picsum.photos/seed/kitchen/200/200', categoryLink: 'Interior', description: 'Pembuatan kitchen set custom sesuai desain dan ukuran.' },
-            { name: 'Furniture', image: 'https://picsum.photos/seed/furniture/200/200', categoryLink: 'Interior', description: 'Pembuatan furniture custom sesuai keinginan.' },
+            { name: 'Interior', image: 'https://picsum.photos/seed/interior/200/200', categoryLink: 'Interior / Eksterior', description: 'Desain dan pengerjaan interior ruangan.' },
+            { name: 'Eksterior', image: 'https://picsum.photos/seed/eksterior/200/200', categoryLink: 'Interior / Eksterior', description: 'Desain dan pengerjaan eksterior bangunan.' },
+            { name: 'Kitchen Set', image: 'https://picsum.photos/seed/kitchen/200/200', categoryLink: 'Interior / Eksterior', description: 'Pembuatan kitchen set custom sesuai desain dan ukuran.' },
+            { name: 'Furniture', image: 'https://picsum.photos/seed/furniture/200/200', categoryLink: 'Interior / Eksterior', description: 'Pembuatan furniture custom sesuai keinginan.' },
         ]
     },
     {
@@ -80,7 +73,7 @@ const allJobTypes: JobType[] = originalServiceGroupsData.flatMap(group => group.
 const originalAllJobTypes = originalServiceGroupsData.flatMap(g => g.jobTypes);
 
 const popularJobTypes: JobType[] = popularServicesData.map((s: Service) => {
-    const originalJob = originalAllJobTypes.find(job => job.image === s.image && job.categoryLink === s.category);
+    const originalJob = originalAllJobTypes.find(job => job.name.replace(/\n/g, ' ') === s.name.replace(/\n/g, ' '));
     
     return {
         name: originalJob ? originalJob.name : s.name,
@@ -108,12 +101,12 @@ const serviceGroupsData: ServiceGroup[] = [
 
 interface AllServicesPageProps {
     onBack: () => void;
-    onJobTypeSelect: (category: string) => void;
+    onServiceSelect: (job: JobType) => void;
     initialCategoryGroupName: string;
 }
 
 const JobTypeGridCard: React.FC<{ jobType: JobType; onClick: () => void; }> = ({ jobType, onClick }) => (
-    <button onClick={onClick} className="text-center group flex flex-col items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-lg">
+    <button onClick={onClick} className="text-center group flex flex-col items-center focus:outline-none rounded-lg">
         <div className="w-full aspect-square rounded-lg flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1 overflow-hidden">
             <img src={jobType.image} alt={jobType.name} className="w-full h-full object-cover" />
         </div>
@@ -122,7 +115,7 @@ const JobTypeGridCard: React.FC<{ jobType: JobType; onClick: () => void; }> = ({
 );
 
 const JobTypeListCard: React.FC<{ jobType: JobType; onClick: () => void; }> = ({ jobType, onClick }) => (
-    <button onClick={onClick} className="w-full flex items-center bg-white p-3 rounded-xl border border-slate-200 space-x-4 transition-all duration-300 hover:shadow-md hover:border-blue-400 text-left focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+    <button onClick={onClick} className="w-full flex items-center bg-white p-3 rounded-xl border border-slate-200 space-x-4 transition-all duration-300 hover:shadow-md hover:border-orange-400 text-left focus:outline-none">
         <img src={jobType.image} alt={jobType.name.replace(/\n/g, ' ')} className="w-16 h-16 object-cover rounded-lg flex-shrink-0" />
         <div className="flex-1 min-w-0">
             <h3 className="font-bold text-slate-800">{jobType.name.replace(/\n/g, ' ')}</h3>
@@ -132,11 +125,22 @@ const JobTypeListCard: React.FC<{ jobType: JobType; onClick: () => void; }> = ({
     </button>
 );
 
-const AllServicesPage: React.FC<AllServicesPageProps> = ({ onBack, onJobTypeSelect, initialCategoryGroupName }) => {
+const categoriesRequiringSurveyInfo = [
+    "Desain Konstruksi",
+    "Bangun / Renovasi",
+    "Repair Maintenance",
+    "Pabrikasi",
+    "Interior / Eksterior",
+    "Panggil Tukang",
+];
+
+const AllServicesPage: React.FC<AllServicesPageProps> = ({ onBack, onServiceSelect, initialCategoryGroupName }) => {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [isClosing, setIsClosing] = useState(false);
     const [activeGroupName, setActiveGroupName] = useState(initialCategoryGroupName);
-    
+    const [isSurveyModalOpen, setIsSurveyModalOpen] = useState(false);
+    const [pendingJobType, setPendingJobType] = useState<JobType | null>(null);
+
     const tabContainerRef = useRef<HTMLDivElement>(null);
     const activeTabRef = useRef<HTMLButtonElement>(null);
 
@@ -169,6 +173,28 @@ const AllServicesPage: React.FC<AllServicesPageProps> = ({ onBack, onJobTypeSele
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
+    const handleServiceClick = (jobType: JobType) => {
+        if (categoriesRequiringSurveyInfo.includes(jobType.categoryLink)) {
+            setPendingJobType(jobType);
+            setIsSurveyModalOpen(true);
+        } else {
+            onServiceSelect(jobType);
+        }
+    };
+
+    const handleProceedToSurvey = () => {
+        if (pendingJobType) {
+            onServiceSelect(pendingJobType);
+        }
+        setIsSurveyModalOpen(false);
+        setPendingJobType(null);
+    };
+
+    const handleCancelSurvey = () => {
+        setIsSurveyModalOpen(false);
+        setPendingJobType(null);
+    };
+
     return (
         <div className="fixed inset-0 z-20 flex flex-col justify-end" role="dialog" aria-modal="true">
             <div className={`fixed inset-0 bg-black/40 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`} onClick={handleClose}></div>
@@ -176,11 +202,11 @@ const AllServicesPage: React.FC<AllServicesPageProps> = ({ onBack, onJobTypeSele
                 <header className="py-4 px-4 sticky top-0 bg-white z-10 rounded-t-2xl flex-shrink-0">
                     <div className="w-10 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 cursor-pointer" onClick={handleClose}></div>
                     <div className="flex justify-between items-center">
-                        <h1 className="text-xl font-bold text-slate-900">Semua</h1>
+                        <h1 className="text-xl font-bold text-slate-900">Daftar Layanan</h1>
                         <div className="flex items-center bg-slate-100 rounded-lg p-1 space-x-1">
                              <button 
                                 onClick={() => setViewMode('grid')} 
-                                className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 flex items-center space-x-2 ${viewMode === 'grid' ? 'bg-blue-600 text-white shadow' : 'text-slate-700'}`}
+                                className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 flex items-center space-x-2 ${viewMode === 'grid' ? 'bg-orange-500 text-white shadow' : 'text-slate-700'}`}
                                 aria-label="Grid view"
                                 aria-pressed={viewMode === 'grid'}
                             >
@@ -189,7 +215,7 @@ const AllServicesPage: React.FC<AllServicesPageProps> = ({ onBack, onJobTypeSele
                             </button>
                             <button 
                                 onClick={() => setViewMode('list')} 
-                                className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 flex items-center space-x-2 ${viewMode === 'list' ? 'bg-blue-600 text-white shadow' : 'text-slate-700'}`}
+                                className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 flex items-center space-x-2 ${viewMode === 'list' ? 'bg-orange-500 text-white shadow' : 'text-slate-700'}`}
                                 aria-label="List view"
                                 aria-pressed={viewMode === 'list'}
                             >
@@ -229,13 +255,13 @@ const AllServicesPage: React.FC<AllServicesPageProps> = ({ onBack, onJobTypeSele
                                     {viewMode === 'grid' ? (
                                         <div className="grid grid-cols-3 gap-4">
                                             {group.jobTypes.map(job => (
-                                                <JobTypeGridCard key={job.name} jobType={job} onClick={() => onJobTypeSelect(job.categoryLink)} />
+                                                <JobTypeGridCard key={job.name} jobType={job} onClick={() => handleServiceClick(job)} />
                                             ))}
                                         </div>
                                     ) : (
                                         <div className="space-y-3">
                                             {group.jobTypes.map(job => (
-                                                <JobTypeListCard key={job.name} jobType={job} onClick={() => onJobTypeSelect(job.categoryLink)} />
+                                                <JobTypeListCard key={job.name} jobType={job} onClick={() => handleServiceClick(job)} />
                                             ))}
                                         </div>
                                     )}
@@ -248,13 +274,13 @@ const AllServicesPage: React.FC<AllServicesPageProps> = ({ onBack, onJobTypeSele
                                 {viewMode === 'grid' ? (
                                     <div className="grid grid-cols-3 gap-4">
                                         {activeGroup.jobTypes.map(job => (
-                                            <JobTypeGridCard key={job.name} jobType={job} onClick={() => onJobTypeSelect(job.categoryLink)} />
+                                            <JobTypeGridCard key={job.name} jobType={job} onClick={() => handleServiceClick(job)} />
                                         ))}
                                     </div>
                                 ) : (
                                     <div className="space-y-3">
                                         {activeGroup.jobTypes.map(job => (
-                                            <JobTypeListCard key={job.name} jobType={job} onClick={() => onJobTypeSelect(job.categoryLink)} />
+                                            <JobTypeListCard key={job.name} jobType={job} onClick={() => handleServiceClick(job)} />
                                         ))}
                                     </div>
                                 )}
@@ -263,6 +289,12 @@ const AllServicesPage: React.FC<AllServicesPageProps> = ({ onBack, onJobTypeSele
                     )}
                 </main>
             </div>
+
+            <SurveyConfirmationModal
+                isOpen={isSurveyModalOpen}
+                onConfirm={handleProceedToSurvey}
+                onCancel={handleCancelSurvey}
+            />
         </div>
     );
 };

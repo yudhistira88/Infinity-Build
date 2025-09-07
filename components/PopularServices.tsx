@@ -8,8 +8,10 @@ const ServiceCard: React.FC<{ service: Service; onClick: () => void }> = ({ serv
         <img src={service.image} alt={service.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
         <div className="absolute bottom-0 left-0 p-2 text-white w-full">
-            <h3 className="text-xs font-bold leading-tight line-clamp-2">{service.name}</h3>
-            <p className="text-[10px] text-slate-200 mt-0.5">{service.priceRange}</p>
+            <h3 className="text-xs font-bold leading-tight line-clamp-2 mb-1.5">{service.name}</h3>
+            <div className="inline-block bg-orange-500 text-white text-[10px] font-bold py-1 px-2.5 rounded-md shadow">
+                Pesan
+            </div>
         </div>
     </button>
 );

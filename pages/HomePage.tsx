@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import PromoBanner from '../components/PromoBanner';
@@ -11,7 +10,8 @@ import AllServicesPage from './AllServicesPage';
 import SearchPage from './SearchPage';
 import CategoryPage from './CategoryPage';
 import ServiceDetailPage from './ServiceDetailPage';
-import type { Service, Notification, Location, BannerSlide, Order } from '../types';
+import BookingPage from './BookingPage';
+import type { Service, Notification, Location, BannerSlide, Order, JobType } from '../types';
 import CallToTukangBanner from '../components/CallToTukangBanner';
 import SurveyConfirmationModal from '../components/SurveyConfirmationModal';
 import SurveyProjectDetailsPage from './SurveyProjectDetailsPage';
@@ -83,7 +83,7 @@ interface HomePageProps {
 }
 
 const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) => {
-    const [view, setView] = useState<'main' | 'promo' | 'allServices' | 'search' | 'category' | 'serviceDetail' | 'surveyProjectDetails' | 'surveyLocation' | 'surveyConfirmation' | 'payment' | 'surveyPromo'>('main');
+    const [view, setView] = useState<'main' | 'promo' | 'allServices' | 'search' | 'category' | 'serviceDetail' | 'surveyProjectDetails' | 'surveyLocation' | 'surveyConfirmation' | 'payment' | 'surveyPromo' | 'booking'>('main');
     const [selectedPromo, setSelectedPromo] = useState<BannerSlide | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
@@ -96,8 +96,8 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
     const [locations, setLocations] = useState<Location[]>(initialLocations);
     const [selectedLocationId, setSelectedLocationId] = useState<string>('1');
 
-    const [isCategorySurveyModalOpen, setCategorySurveyModalOpen] = useState(false);
-    const [pendingCategory, setPendingCategory] = useState<string | null>(null);
+    const [isBookingSurveyModalOpen, setIsBookingSurveyModalOpen] = useState(false);
+    const [pendingJob, setPendingJob] = useState<JobType | null>(null);
 
     useEffect(() => {
         const isMainView = view === 'main';
@@ -144,45 +144,37 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
     };
 
     const categoriesRequiringSurveyInfo = [
+        "Desain Konstruksi",
         "Bangun / Renovasi",
         "Repair Maintenance",
         "Pabrikasi",
-        "Interior",
+        "Interior / Eksterior",
         "Panggil Tukang",
     ];
 
-    const handleCategorySelect = (categoryName: string) => {
-        // This function is now called from AllServicesPage
-        setView('main'); // Close the AllServicesPage sheet first
-        
-        // Use a timeout to allow the sheet to close before opening the next modal/page
-        setTimeout(() => {
-            if (categoriesRequiringSurveyInfo.includes(categoryName)) {
-                setPendingCategory(categoryName);
-                setCategorySurveyModalOpen(true);
-            } else {
-                setSelectedCategory(categoryName);
-                setView('category');
-            }
-        }, 300); // Animation duration
+    const handleServiceSelected = (job: JobType) => {
+        if (categoriesRequiringSurveyInfo.includes(job.categoryLink)) {
+            setSurveyData({
+                jobTypeName: job.name,
+                categoryGroupName: job.categoryLink,
+                location: selectedLocation,
+                jobImage: job.image,
+                jobDescription: job.description,
+            });
+            setView('surveyProjectDetails');
+        } else {
+            setSelectedCategory(job.categoryLink);
+            setView('category');
+        }
     };
     
-    const handleProceedToCategory = () => {
-        if (pendingCategory) {
-            setSurveyData({ categoryName: pendingCategory, location: selectedLocation });
-            setView('surveyProjectDetails');
-        }
-        setCategorySurveyModalOpen(false);
-        setPendingCategory(null);
-    };
-
     const handleNextFromProjectDetails = (data: any) => {
         setSurveyData(prev => ({ ...prev, ...data }));
         setView('surveyLocation');
     };
 
     const handleBackFromProjectDetails = () => {
-        setView('main');
+        setView('allServices');
         setSurveyData({});
     };
 
@@ -235,7 +227,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
         alert("Pembayaran berhasil! Pesanan Anda sedang diproses.");
         const newOrder: Order = {
             id: `JBS-2407${String(Math.random()).slice(2, 7)}`, 
-            serviceName: surveyData.categoryName || 'Survey Lokasi',
+            serviceName: surveyData.jobTypeName || 'Survey Lokasi',
             date: new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }),
             status: 'In Progress',
             provider: { name: 'Tim Survey Jasaqu', avatar: 'https://i.pravatar.cc/150?img=1' },
@@ -278,7 +270,6 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
         setLocationModalOpen(false);
     };
 
-// FIX: Define handleAddAndSetSurveyLocation to handle adding new locations during the survey flow.
     const handleAddAndSetSurveyLocation = ({ name, address }: { name: string; address: string }) => {
         const newLocation: Location = {
             id: new Date().getTime().toString(),
@@ -294,26 +285,34 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
         }));
     };
 
-// FIX: Define handleBackFromCategory to navigate back from the category page.
     const handleBackFromCategory = () => {
-        setView('main');
+        setView('allServices');
         setSelectedCategory(null);
     };
 
-// FIX: Define handleServiceSelect to handle clicks on popular services.
     const handleServiceSelect = (service: Service) => {
-        setSelectedService(service);
-        setView('serviceDetail');
+        const job: JobType = {
+            name: service.name,
+            image: service.image,
+            categoryLink: service.category,
+            description: service.description || `Layanan dalam kategori ${service.category}.`
+        };
+
+        if (categoriesRequiringSurveyInfo.includes(job.categoryLink)) {
+            setPendingJob(job);
+            setIsBookingSurveyModalOpen(true);
+        } else {
+            setSelectedCategory(job.categoryLink);
+            setView('category');
+        }
     };
 
-// FIX: Define handleMarkAllAsRead to mark all notifications as read.
     const handleMarkAllAsRead = () => {
         setNotifications(currentNotifications =>
             currentNotifications.map(n => ({ ...n, read: true }))
         );
     };
 
-// FIX: Define handleNotificationClick to handle notification clicks, mark them as read, and navigate.
     const handleNotificationClick = (notification: Notification) => {
         setNotifications(currentNotifications =>
             currentNotifications.map(n =>
@@ -326,11 +325,23 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
         setNotificationsOpen(false);
     };
 
-// FIX: Define handleLocationSelect to update the selected location from the modal.
     const handleLocationSelect = (id: string) => {
         setSelectedLocationId(id);
         setLocationModalOpen(false);
     };
+    
+    if (view === 'booking' && selectedService) {
+        return <BookingPage 
+            service={selectedService} 
+            location={selectedLocation} 
+            onBack={() => { setView('main'); setSelectedService(null); }} 
+            onBookingConfirmed={() => {
+                setView('main');
+                setSelectedService(null);
+                onNavigate('Pesanan');
+            }} 
+        />;
+    }
 
     if (view === 'payment') {
         return <PaymentPage 
@@ -342,7 +353,10 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
 
     if (view === 'surveyProjectDetails') {
         return <SurveyProjectDetailsPage 
-            categoryName={surveyData.categoryName}
+            jobTypeName={surveyData.jobTypeName}
+            categoryGroupName={surveyData.categoryGroupName}
+            jobImage={surveyData.jobImage}
+            jobDescription={surveyData.jobDescription}
             onBack={handleBackFromProjectDetails}
             onNext={handleNextFromProjectDetails}
             initialData={surveyData}
@@ -351,7 +365,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
 
     if (view === 'surveyLocation') {
         return <SurveyLocationPage
-            categoryName={surveyData.categoryName}
+            categoryName={surveyData.categoryGroupName}
             onBack={handleBackFromLocation}
             onNext={handleNextFromLocation}
             initialData={surveyData}
@@ -420,7 +434,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
         return <SearchPage allServices={allServicesData} onBack={() => setView('main')} location={selectedLocation} onNavigate={onNavigate} />;
     }
     
-    const isModalOpen = isNotificationsOpen || isLocationModalOpen || isCategorySurveyModalOpen || view === 'allServices';
+    const isModalOpen = isNotificationsOpen || isLocationModalOpen || view === 'allServices' || isBookingSurveyModalOpen;
 
     return (
         <div className="relative flex flex-col h-screen">
@@ -444,7 +458,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
                 </div>
             </main>
             
-            {view === 'allServices' && <AllServicesPage onBack={() => setView('main')} onJobTypeSelect={handleCategorySelect} initialCategoryGroupName={initialCategoryGroup} />}
+            {view === 'allServices' && <AllServicesPage onBack={() => setView('main')} onServiceSelect={handleServiceSelected} initialCategoryGroupName={initialCategoryGroup} />}
 
             {isNotificationsOpen && (
                 <NotificationsPanel
@@ -461,13 +475,20 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
                     onLocationSelect={handleLocationSelect}
                     onAddNewLocation={handleAddNewLocation}
                 />}
-            {isCategorySurveyModalOpen && (
+            
+            {isBookingSurveyModalOpen && (
                 <SurveyConfirmationModal 
-                    isOpen={isCategorySurveyModalOpen}
-                    onConfirm={handleProceedToCategory}
+                    isOpen={isBookingSurveyModalOpen}
+                    onConfirm={() => {
+                        setIsBookingSurveyModalOpen(false);
+                        if (pendingJob) {
+                            handleServiceSelected(pendingJob);
+                            setPendingJob(null);
+                        }
+                    }}
                     onCancel={() => {
-                        setCategorySurveyModalOpen(false);
-                        setPendingCategory(null);
+                        setIsBookingSurveyModalOpen(false);
+                        setPendingJob(null);
                     }}
                 />
             )}

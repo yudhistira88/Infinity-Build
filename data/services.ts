@@ -1,4 +1,3 @@
-
 import type { Service } from '../types';
 
 export const allServicesData: Service[] = [
@@ -27,11 +26,11 @@ export const allServicesData: Service[] = [
     { id: 'pab-04', name: 'Shelter / Halte', priceRange: 'Hubungi kami', image: 'https://picsum.photos/seed/shelter/200/200', category: 'Pabrikasi', description: 'Pabrikasi shelter atau halte bus custom sesuai kebutuhan proyek.' },
     { id: 'pab-05', name: 'JPU', priceRange: 'Hubungi kami', image: 'https://picsum.photos/seed/jpu/200/200', category: 'Pabrikasi', description: 'Pabrikasi dan pemasangan Jembatan Penyeberangan Umum (JPU).' },
     
-    // Interior
-    { id: 'int-01', name: 'Interior', priceRange: 'Hubungi kami', image: 'https://picsum.photos/seed/interior/200/200', category: 'Interior', description: 'Desain dan pengerjaan interior ruangan, dari pengecatan hingga layout.' },
-    { id: 'int-02', name: 'Eksterior', priceRange: 'Hubungi kami', image: 'https://picsum.photos/seed/eksterior/200/200', category: 'Interior', description: 'Pengerjaan fasad, taman, dan elemen eksterior lainnya.' },
-    { id: 'int-03', name: 'Kitchen Set', priceRange: 'Rp2JT/m', image: 'https://picsum.photos/seed/kitchen/200/200', category: 'Interior', description: 'Pembuatan kitchen set custom sesuai desain dan ukuran dapur Anda.' },
-    { id: 'int-04', name: 'Furniture', priceRange: 'Hubungi kami', image: 'https://picsum.photos/seed/furniture/200/200', category: 'Interior', description: 'Pembuatan furniture custom (lemari, meja, partisi) sesuai keinginan.' },
+    // Interior / Eksterior
+    { id: 'int-01', name: 'Interior', priceRange: 'Hubungi kami', image: 'https://picsum.photos/seed/interior/200/200', category: 'Interior / Eksterior', description: 'Desain dan pengerjaan interior ruangan, dari pengecatan hingga layout.' },
+    { id: 'int-02', name: 'Eksterior', priceRange: 'Hubungi kami', image: 'https://picsum.photos/seed/eksterior/200/200', category: 'Interior / Eksterior', description: 'Pengerjaan fasad, taman, dan elemen eksterior lainnya.' },
+    { id: 'int-03', name: 'Kitchen Set', priceRange: 'Rp2JT/m', image: 'https://picsum.photos/seed/kitchen/200/200', category: 'Interior / Eksterior', description: 'Pembuatan kitchen set custom sesuai desain dan ukuran dapur Anda.' },
+    { id: 'int-04', name: 'Furniture', priceRange: 'Hubungi kami', image: 'https://picsum.photos/seed/furniture/200/200', category: 'Interior / Eksterior', description: 'Pembuatan furniture custom (lemari, meja, partisi) sesuai keinginan.' },
     
     // Panggil Tukang
     { id: 'tkg-01', name: 'Tukang Harian', priceRange: 'Rp150K/hari', image: 'https://picsum.photos/seed/tukang/200/200', category: 'Panggil Tukang', description: 'Penyediaan tukang terampil untuk pekerjaan konstruksi skala kecil harian.' },

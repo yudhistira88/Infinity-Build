@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { Location } from '../types';
 import SurveyProjectDetailsPage from './SurveyProjectDetailsPage';
 import SurveyLocationPage from './SurveyLocationPage';
+import { allServicesData } from '../data/services';
 
 interface SurveyBookingPageProps {
     categoryName: string;
@@ -58,6 +59,9 @@ const SurveyBookingPage: React.FC<SurveyBookingPageProps> = ({ categoryName, onB
         }));
     };
 
+    const categoryImage = allServicesData.find(s => s.category === categoryName)?.image || 'https://picsum.photos/seed/default/200/200';
+    const categoryDescription = allServicesData.find(s => s.category === categoryName)?.description || 'Isi detail proyek Anda untuk melanjutkan.';
+
     if (view === 'location') {
         return (
             <SurveyLocationPage
@@ -75,7 +79,10 @@ const SurveyBookingPage: React.FC<SurveyBookingPageProps> = ({ categoryName, onB
 
     return (
         <SurveyProjectDetailsPage
-            categoryName={categoryName}
+            jobTypeName={categoryName}
+            categoryGroupName={categoryName}
+            jobImage={categoryImage}
+            jobDescription={categoryDescription}
             onBack={handleBackFromProjectDetails}
             onNext={handleNextFromProjectDetails}
             initialData={surveyData}
