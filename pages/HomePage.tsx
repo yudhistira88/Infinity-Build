@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import PromoBanner from '../components/PromoBanner';
@@ -9,53 +8,17 @@ import NotificationsPanel from '../components/NotificationsPanel';
 import LocationModal from '../components/LocationModal';
 import PromoPage from './PromoPage';
 import AllServicesPage from './AllServicesPage';
-import CallTukangPage from './CallTukangPage';
 import SearchPage from './SearchPage';
 import CategoryPage from './CategoryPage';
 import ServiceDetailPage from './ServiceDetailPage';
 import type { Service, Notification, Location, BannerSlide, Order } from '../types';
 import CallToTukangBanner from '../components/CallToTukangBanner';
-import PopularServicesPage from './PopularServicesPage';
 import SurveyConfirmationModal from '../components/SurveyConfirmationModal';
 import SurveyProjectDetailsPage from './SurveyProjectDetailsPage';
 import SurveyLocationPage from './SurveyLocationPage';
 import SurveyConfirmationPage from './SurveyConfirmationPage';
 import PaymentPage from './PaymentPage';
-
-const allServicesData: Service[] = [
-    // Desain Konstruksi
-    { id: 'dsn-01', name: 'Jasa Desain 2D Lengkap', priceRange: 'Rp200K - Rp2JT', image: 'https://picsum.photos/seed/desain2d/200/200', category: 'Desain Konstruksi', description: 'Rancangan 2D komprehensif untuk denah, tampak, dan potongan bangunan Anda.' },
-    { id: 'dsn-02', name: 'Desain 3D Visual & Rendering', priceRange: 'Rp1JT - Rp5JT', image: 'https://picsum.photos/seed/desain3d/200/200', category: 'Desain Konstruksi', description: 'Visualisasi 3D fotorealistik untuk melihat hasil akhir proyek sebelum dibangun.' },
-    { id: 'dsn-03', name: 'Perencanaan Anggaran Biaya', priceRange: 'Rp500K - Rp3JT', image: 'https://picsum.photos/seed/rab/200/200', category: 'Desain Konstruksi', description: 'Perhitungan Rencana Anggaran Biaya (RAB) yang detail dan akurat.' },
-
-    // Bangun / Renovasi
-    { id: 'bgn-01', name: 'Jasa Renovasi Rumah', priceRange: 'Rp2JT - Rp5JT', image: 'https://picsum.photos/seed/renovasi/200/200', category: 'Bangun / Renovasi', description: 'Perbarui dan perbaiki bagian rumah Anda sesuai keinginan dan kebutuhan.' },
-    { id: 'bgn-02', name: 'Bangun Rumah dari Nol', priceRange: 'Hubungi kami', image: 'https://picsum.photos/seed/bangun/200/200', category: 'Bangun / Renovasi', description: 'Wujudkan rumah impian Anda dari tahap desain hingga serah terima kunci.' },
-    { id: 'bgn-03', name: 'Tambah Tingkat/Lantai', priceRange: 'Hubungi kami', image: 'https://picsum.photos/seed/tingkat/200/200', category: 'Bangun / Renovasi', description: 'Menambah lantai bangunan untuk ruang ekstra bagi keluarga atau bisnis.' },
-
-    // Repair Maintenance
-    { id: 'prb-01', name: 'Perbaikan Atap Bocor', priceRange: 'Rp250K - Rp1JT', image: 'https://picsum.photos/seed/atap/200/200', category: 'Repair Maintenance', description: 'Solusi cepat dan tuntas untuk masalah atap bocor di rumah atau gedung.' },
-    { id: 'prb-02', name: 'Perbaikan Dinding Retak', priceRange: 'Rp150K - Rp800K', image: 'https://picsum.photos/seed/dinding/200/200', category: 'Repair Maintenance', description: 'Memperbaiki retak pada dinding agar kembali mulus dan kokoh.' },
-    { id: 'prb-03', name: 'Saluran Air Mampet', priceRange: 'Rp200K - Rp700K', image: 'https://picsum.photos/seed/saluran/200/200', category: 'Repair Maintenance', description: 'Mengatasi masalah saluran air tersumbat di kamar mandi, dapur, atau wastafel.' },
-    { id: 'lis-01', name: 'Instalasi Listrik Rumah', priceRange: 'Rp300K - Rp1.5JT', image: 'https://picsum.photos/seed/listrik/200/200', category: 'Repair Maintenance', description: 'Pemasangan instalasi listrik baru yang aman dan sesuai standar.' },
-    { id: 'lis-02', name: 'Perbaikan Konsleting', priceRange: 'Rp200K - Rp800K', image: 'https://picsum.photos/seed/konslet/200/200', category: 'Repair Maintenance', description: 'Penanganan cepat masalah korsleting listrik untuk keamanan properti Anda.' },
-
-    // Pabrikasi
-    { id: 'bgn-04', name: 'Jasa Pembuatan Canopy', priceRange: 'Rp200K - Rp2JT', image: 'https://picsum.photos/seed/canopy/200/200', category: 'Pabrikasi', description: 'Pemasangan kanopi berkualitas untuk melindungi carport atau teras Anda.' },
-    { id: 'pgr-01', name: 'Pembuatan Pagar Besi Minimalis', priceRange: 'Rp450K/m', image: 'https://picsum.photos/seed/pagarbesi/200/200', category: 'Pabrikasi', description: 'Pembuatan pagar besi dengan desain minimalis modern, kuat dan tahan lama.' },
-    { id: 'pgr-02', name: 'Servis Pagar Otomatis', priceRange: 'Rp300K - Rp1JT', image: 'https://picsum.photos/seed/pagarotomatis/200/200', category: 'Pabrikasi', description: 'Perbaikan dan perawatan sistem pagar otomatis Anda.' },
-    
-    // Interior / Eksterior
-    { id: 'cat-01', name: 'Jasa Pengecatan Dinding', priceRange: 'Rp30K/m²', image: 'https://picsum.photos/seed/catdinding/200/200', category: 'Interior / Eksterior', description: 'Pengecatan interior dan eksterior dengan hasil rapi dan tahan lama.' },
-    { id: 'cat-02', name: 'Jasa Pengecatan Pagar', priceRange: 'Rp200K - Rp1JT', image: 'https://picsum.photos/seed/pagar/200/200', category: 'Interior / Eksterior', description: 'Memberikan lapisan cat baru untuk melindungi dan memperindah pagar Anda.' },
-    { id: 'lnt-01', name: 'Jasa Pasang Keramik Lantai', priceRange: 'Rp75K/m²', image: 'https://picsum.photos/seed/keramiklantai/200/200', category: 'Interior / Eksterior', description: 'Pemasangan keramik lantai untuk berbagai jenis ruangan dengan presisi.' },
-    { id: 'lnt-02', name: 'Bongkar Pasang Keramik', priceRange: 'Rp100K/m²', image: 'https://picsum.photos/seed/bongkarkeramik/200/200', category: 'Interior / Eksterior', description: 'Membongkar keramik lama dan memasang yang baru dengan rapi.' },
-    
-    // Panggil Tukang
-    { id: 'tkg-01', name: 'Tukang Harian (Borongan)', priceRange: 'Rp150K/hari', image: 'https://picsum.photos/seed/tukang/200/200', category: 'Panggil Tukang', description: 'Penyediaan tukang terampil untuk pekerjaan konstruksi skala kecil harian.' },
-];
-
-const popularServicesData: Service[] = allServicesData.filter(s => ['bgn-01', 'dsn-01', 'bgn-04', 'cat-02', 'lis-01', 'prb-01'].includes(s.id));
+import { allServicesData, popularServicesData } from '../data/services';
 
 const bannersData: BannerSlide[] = [
     {
@@ -120,11 +83,12 @@ interface HomePageProps {
 }
 
 const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) => {
-    const [view, setView] = useState<'main' | 'promo' | 'allServices' | 'callTukang' | 'search' | 'category' | 'serviceDetail' | 'popularServices' | 'surveyProjectDetails' | 'surveyLocation' | 'surveyConfirmation' | 'payment' | 'surveyPromo'>('main');
+    const [view, setView] = useState<'main' | 'promo' | 'allServices' | 'search' | 'category' | 'serviceDetail' | 'surveyProjectDetails' | 'surveyLocation' | 'surveyConfirmation' | 'payment' | 'surveyPromo'>('main');
     const [selectedPromo, setSelectedPromo] = useState<BannerSlide | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
     const [surveyData, setSurveyData] = useState<any>({});
+    const [initialCategoryGroup, setInitialCategoryGroup] = useState('');
 
     const [isNotificationsOpen, setNotificationsOpen] = useState(false);
     const [isLocationModalOpen, setLocationModalOpen] = useState(false);
@@ -151,12 +115,9 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
         setView('promo');
     };
     
-    const handleCallTukangClick = () => {
-        setView('callTukang');
-    };
-    
-    const handleBackFromCallTukang = () => {
-        setView('main');
+    const handlePanggilTukangClick = () => {
+        setInitialCategoryGroup('Panggil Tukang');
+        setView('allServices');
     };
 
     const handleBackFromPromo = () => {
@@ -165,36 +126,45 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
     };
     
     const handleShowPopularServices = () => {
-        setView('popularServices');
+        setInitialCategoryGroup('Populer');
+        setView('allServices');
     };
 
     const handleBackFromAllServices = () => {
         setView('main');
     };
     
-    const handleBackFromPopularServices = () => {
-        setView('main');
-    };
-
     const handleSearchClick = () => {
         setView('search');
+    };
+
+    const handleCategoryClickFromHome = (categoryName: string) => {
+        setInitialCategoryGroup(categoryName);
+        setView('allServices');
     };
 
     const categoriesRequiringSurveyInfo = [
         "Bangun / Renovasi",
         "Repair Maintenance",
         "Pabrikasi",
-        "Interior / Eksterior",
+        "Interior",
+        "Panggil Tukang",
     ];
 
     const handleCategorySelect = (categoryName: string) => {
-        if (categoriesRequiringSurveyInfo.includes(categoryName)) {
-            setPendingCategory(categoryName);
-            setCategorySurveyModalOpen(true);
-        } else {
-            setSelectedCategory(categoryName);
-            setView('category');
-        }
+        // This function is now called from AllServicesPage
+        setView('main'); // Close the AllServicesPage sheet first
+        
+        // Use a timeout to allow the sheet to close before opening the next modal/page
+        setTimeout(() => {
+            if (categoriesRequiringSurveyInfo.includes(categoryName)) {
+                setPendingCategory(categoryName);
+                setCategorySurveyModalOpen(true);
+            } else {
+                setSelectedCategory(categoryName);
+                setView('category');
+            }
+        }, 300); // Animation duration
     };
     
     const handleProceedToCategory = () => {
@@ -297,6 +267,18 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
         }
     };
 
+    const handleAddNewLocation = ({ name, address }: { name: string; address: string }) => {
+        const newLocation: Location = {
+            id: new Date().getTime().toString(),
+            name,
+            address,
+        };
+        setLocations(prev => [...prev, newLocation]);
+        setSelectedLocationId(newLocation.id);
+        setLocationModalOpen(false);
+    };
+
+// FIX: Define handleAddAndSetSurveyLocation to handle adding new locations during the survey flow.
     const handleAddAndSetSurveyLocation = ({ name, address }: { name: string; address: string }) => {
         const newLocation: Location = {
             id: new Date().getTime().toString(),
@@ -304,7 +286,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
             address,
         };
         setLocations(prev => [...prev, newLocation]);
-        setSurveyData(prev => ({
+        setSurveyData((prev: any) => ({
             ...prev,
             location: newLocation,
             locationId: newLocation.id,
@@ -312,63 +294,41 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
         }));
     };
 
+// FIX: Define handleBackFromCategory to navigate back from the category page.
     const handleBackFromCategory = () => {
         setView('main');
         setSelectedCategory(null);
     };
 
+// FIX: Define handleServiceSelect to handle clicks on popular services.
     const handleServiceSelect = (service: Service) => {
         setSelectedService(service);
         setView('serviceDetail');
     };
 
-    const handleBackFromServiceDetail = () => {
-        // Instead of going straight to main, go back to the previous view if possible
-        const previousView = selectedCategory ? 'category' : (view === 'allServices' ? 'allServices' : 'main');
-        if (view === 'serviceDetail') { // This logic can be expanded
-             setView(previousView)
-        } else {
-             setView('main');
-        }
-        setSelectedService(null);
-    };
-
-    const handleMarkAsRead = (id: string) => {
-        setNotifications(currentNotifications =>
-            currentNotifications.map(n => (n.id === id ? { ...n, read: true } : n))
-        );
-    };
-
+// FIX: Define handleMarkAllAsRead to mark all notifications as read.
     const handleMarkAllAsRead = () => {
         setNotifications(currentNotifications =>
             currentNotifications.map(n => ({ ...n, read: true }))
         );
     };
 
+// FIX: Define handleNotificationClick to handle notification clicks, mark them as read, and navigate.
     const handleNotificationClick = (notification: Notification) => {
-        if (!notification.read) {
-            handleMarkAsRead(notification.id);
-        }
+        setNotifications(currentNotifications =>
+            currentNotifications.map(n =>
+                n.id === notification.id ? { ...n, read: true } : n
+            )
+        );
         if (notification.linkPath) {
             onNavigate(notification.linkPath);
         }
         setNotificationsOpen(false);
     };
-    
+
+// FIX: Define handleLocationSelect to update the selected location from the modal.
     const handleLocationSelect = (id: string) => {
         setSelectedLocationId(id);
-        setLocationModalOpen(false);
-    };
-
-    const handleAddNewLocation = ({ name, address }: { name: string; address: string }) => {
-        const newLocation: Location = {
-            id: new Date().getTime().toString(),
-            name,
-            address,
-        };
-        const newLocations = [...locations, newLocation];
-        setLocations(newLocations);
-        setSelectedLocationId(newLocation.id);
         setLocationModalOpen(false);
     };
 
@@ -452,25 +412,15 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
         />;
     }
     
-    if (view === 'popularServices') {
-        return <PopularServicesPage services={popularServicesData} onBack={handleBackFromPopularServices} location={selectedLocation} onNavigate={onNavigate} />;
-    }
-
     if (view === 'promo' && selectedPromo) {
         return <PromoPage promo={selectedPromo} allPromos={bannersData} onBack={handleBackFromPromo} />;
     }
     
-    if (view === 'allServices') {
-        return <AllServicesPage allServices={allServicesData} onBack={() => setView('main')} location={selectedLocation} onNavigate={onNavigate} />;
-    }
-    
-    if (view === 'callTukang') {
-        return <CallTukangPage onBack={handleBackFromCallTukang} initialLocation={selectedLocation} />;
-    }
-
     if (view === 'search') {
         return <SearchPage allServices={allServicesData} onBack={() => setView('main')} location={selectedLocation} onNavigate={onNavigate} />;
     }
+    
+    const isModalOpen = isNotificationsOpen || isLocationModalOpen || isCategorySurveyModalOpen || view === 'allServices';
 
     return (
         <div className="relative flex flex-col h-screen">
@@ -484,16 +434,18 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate, setBottomNavVisible }) 
             />
             
             <main className="flex-grow overflow-y-auto scrollbar-hide pb-[calc(5rem+env(safe-area-inset-bottom))]">
-                <div className={`${(isNotificationsOpen || isLocationModalOpen || isCategorySurveyModalOpen) ? 'blur-sm pointer-events-none' : ''} transition-all duration-300`}>
+                <div className={`${isModalOpen ? 'blur-sm pointer-events-none' : ''} transition-all duration-300`}>
                     <>
                         <PromoBanner banners={bannersData} onBannerClick={handleBannerClick} />
-                        <ServiceCategories onCategorySelect={handleCategorySelect} />
-                        <CallToTukangBanner onCallClick={handleCallTukangClick} />
+                        <ServiceCategories onCategorySelect={handleCategoryClickFromHome} />
+                        <CallToTukangBanner onCallClick={handlePanggilTukangClick} />
                         <PopularServices services={popularServicesData} onServiceClick={handleServiceSelect} onViewAllClick={handleShowPopularServices} />
                     </>
                 </div>
             </main>
             
+            {view === 'allServices' && <AllServicesPage onBack={() => setView('main')} onJobTypeSelect={handleCategorySelect} initialCategoryGroupName={initialCategoryGroup} />}
+
             {isNotificationsOpen && (
                 <NotificationsPanel
                     notifications={notifications}

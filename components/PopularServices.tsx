@@ -1,14 +1,15 @@
 
+
 import React from 'react';
 import type { Service } from '../types';
 
 const ServiceCard: React.FC<{ service: Service; onClick: () => void }> = ({ service, onClick }) => (
-    <button onClick={onClick} className="relative flex-shrink-0 w-40 h-48 rounded-xl overflow-hidden group shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl cursor-pointer text-left">
+    <button onClick={onClick} className="relative flex-shrink-0 w-28 h-40 rounded-xl overflow-hidden group shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl cursor-pointer text-left">
         <img src={service.image} alt={service.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-        <div className="absolute bottom-0 left-0 p-3 text-white w-full">
-            <h3 className="text-sm font-bold leading-tight line-clamp-2">{service.name}</h3>
-            <p className="text-xs text-slate-200 mt-1">{service.priceRange}</p>
+        <div className="absolute bottom-0 left-0 p-2 text-white w-full">
+            <h3 className="text-xs font-bold leading-tight line-clamp-2">{service.name}</h3>
+            <p className="text-[10px] text-slate-200 mt-0.5">{service.priceRange}</p>
         </div>
     </button>
 );

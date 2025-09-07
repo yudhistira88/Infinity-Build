@@ -1,150 +1,268 @@
-import React, { useState, useMemo } from 'react';
-import type { Service, Location } from '../types';
-import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
-import SearchIcon from '../components/icons/SearchIcon';
-import ViewGridIcon from '../components/icons/ViewGridIcon';
-import ViewListIcon from '../components/icons/ViewListIcon';
-import ServiceDetailPage from './ServiceDetailPage';
 
-// Props for the main component
-interface AllServicesPageProps {
-    allServices: Service[];
-    onBack: () => void;
-    location: Location;
-    onNavigate: (page: string) => void;
+import React, { useState, useEffect, useRef } from 'react';
+import DotsGridIcon from '../components/icons/DotsGridIcon';
+import ListIcon from '../components/icons/ListIcon';
+import ChevronRightIcon from '../components/icons/ChevronRightIcon';
+import { popularServicesData } from '../data/services';
+import type { Service } from '../types';
+
+interface JobType {
+  name: string;
+  image: string;
+  categoryLink: string; 
+  description: string;
 }
 
-// Redesigned Service Grid Card
-const ServiceGridCard: React.FC<{ service: Service; onClick: () => void; }> = ({ service, onClick }) => (
-    <button onClick={onClick} className="bg-white rounded-xl overflow-hidden shadow-sm flex flex-col group transition-all duration-300 hover:shadow-lg hover:-translate-y-1 text-left border border-slate-100">
-        <div className="w-full h-32 bg-slate-200 overflow-hidden relative">
-            <img src={service.image} alt={service.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-        </div>
-        <div className="p-3 flex-grow flex flex-col justify-between">
-            <h3 className="text-sm font-semibold text-slate-800 leading-tight line-clamp-2">{service.name}</h3>
-            <p className="text-xs text-slate-500 mt-2">{service.priceRange}</p>
-        </div>
-    </button>
-);
+interface ServiceGroup {
+  groupName: string;
+  jobTypes: JobType[];
+}
 
-// Redesigned Service List Card
-const ServiceListCard: React.FC<{ service: Service; onClick: () => void; }> = ({ service, onClick }) => (
-    <button onClick={onClick} className="w-full flex items-center bg-white p-3 rounded-xl border border-slate-200 space-x-4 transition-all duration-300 hover:shadow-lg hover:border-orange-400 hover:bg-white transform hover:-translate-y-0.5 text-left">
-        <img src={service.image} alt={service.name} className="w-24 h-24 object-cover rounded-lg flex-shrink-0"/>
-        <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-slate-800">{service.name}</h3>
-            <p className="text-sm text-slate-500 mt-1 line-clamp-2">{service.description}</p>
-            <p className="text-sm font-semibold text-orange-600 mt-2">{service.priceRange}</p>
-        </div>
-    </button>
-);
-
-
-const AllServicesPage: React.FC<AllServicesPageProps> = ({ allServices, onBack, location, onNavigate }) => {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-    const [selectedService, setSelectedService] = useState<Service | null>(null);
-
-    const categories = useMemo(() => {
-        const uniqueCategories = [...new Set(allServices.map(s => s.category))];
-        return ['Semua', ...uniqueCategories];
-    }, [allServices]);
-    
-    const [activeCategory, setActiveCategory] = useState(categories[0]);
-
-    const filteredServices = useMemo(() => {
-        return allServices
-            .filter(service => activeCategory === 'Semua' || service.category === activeCategory)
-            .filter(service =>
-                service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                service.category.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-    }, [allServices, searchQuery, activeCategory]);
-
-    if (selectedService) {
-        return <ServiceDetailPage service={selectedService} onBack={() => setSelectedService(null)} location={location} onNavigate={onNavigate} />;
+const originalServiceGroupsData: ServiceGroup[] = [
+    {
+        groupName: 'Desain Konstruksi',
+        jobTypes: [
+            { name: 'Denah 2D', image: 'https://picsum.photos/seed/denah2d/200/200', categoryLink: 'Desain Konstruksi', description: 'Rancangan denah 2D detail untuk tata ruang.' },
+            { name: 'Desain 2D\nLengkap', image: 'https://picsum.photos/seed/desain2dlengkap/200/200', categoryLink: 'Desain Konstruksi', description: 'Gambar kerja lengkap untuk denah, tampak, dan potongan.' },
+            { name: 'Desain 3D', image: 'https://picsum.photos/seed/desain3d/200/200', categoryLink: 'Desain Konstruksi', description: 'Visualisasi 3D fotorealistik untuk proyek Anda.' },
+            { name: 'RAB', image: 'https://picsum.photos/seed/rab/200/200', categoryLink: 'Desain Konstruksi', description: 'Perhitungan detail Rencana Anggaran Biaya proyek.' },
+            { name: 'Analisa\nStruktur', image: 'https://picsum.photos/seed/struktur/200/200', categoryLink: 'Desain Konstruksi', description: 'Analisa kekuatan dan kelayakan struktur bangunan.' },
+            { name: 'Gambar\nIMB/PBG', image: 'https://picsum.photos/seed/imbpbg/200/200', categoryLink: 'Desain Konstruksi', description: 'Penyusunan gambar teknis untuk perizinan IMB/PBG.' },
+        ]
+    },
+    {
+        groupName: 'Bangun / Renovasi',
+        jobTypes: [
+            { name: 'Bangun', image: 'https://picsum.photos/seed/bangun/200/200', categoryLink: 'Bangun / Renovasi', description: 'Wujudkan bangunan impian dari nol hingga serah terima kunci.' },
+            { name: 'Renovasi', image: 'https://picsum.photos/seed/renovasi/200/200', categoryLink: 'Bangun / Renovasi', description: 'Perbarui dan perbaiki bagian bangunan sesuai kebutuhan Anda.' },
+        ]
+    },
+    {
+        groupName: 'Repair Maintenance',
+        jobTypes: [
+            { name: 'RM\nBangunan', image: 'https://picsum.photos/seed/rmbangunan/200/200', categoryLink: 'Repair Maintenance', description: 'Perbaikan dan pemeliharaan struktur bangunan.' },
+            { name: 'RM MEP', image: 'https://picsum.photos/seed/rmmep/200/200', categoryLink: 'Repair Maintenance', description: 'Pemeliharaan sistem Mekanikal, Elektrikal, & Plumbing.' },
+            { name: 'RM Interior\n& Eksterior', image: 'https://picsum.photos/seed/rmie/200/200', categoryLink: 'Repair Maintenance', description: 'Perbaikan dan perawatan elemen interior dan eksterior.' },
+            { name: 'RM\nFurniture', image: 'https://picsum.photos/seed/rmfurniture/200/200', categoryLink: 'Repair Maintenance', description: 'Servis dan perbaikan furniture Anda.' },
+        ]
+    },
+    {
+        groupName: 'Pabrikasi',
+        jobTypes: [
+            { name: 'Canopy', image: 'https://picsum.photos/seed/canopy/200/200', categoryLink: 'Pabrikasi', description: 'Pemasangan kanopi berkualitas untuk carport atau teras.' },
+            { name: 'Pagar', image: 'https://picsum.photos/seed/pagarbesi/200/200', categoryLink: 'Pabrikasi', description: 'Pembuatan pagar dengan berbagai material dan desain.' },
+            { name: 'Gazebo', image: 'https://picsum.photos/seed/gazebo/200/200', categoryLink: 'Pabrikasi', description: 'Pembuatan gazebo untuk menambah estetika taman Anda.' },
+            { name: 'Shelter\n/ Halte', image: 'https://picsum.photos/seed/shelter/200/200', categoryLink: 'Pabrikasi', description: 'Pabrikasi shelter atau halte custom sesuai kebutuhan.' },
+            { name: 'JPU', image: 'https://picsum.photos/seed/jpu/200/200', categoryLink: 'Pabrikasi', description: 'Pabrikasi Jembatan Penyeberangan Umum (JPU).' },
+        ]
+    },
+    {
+        groupName: 'Interior',
+        jobTypes: [
+            { name: 'Interior', image: 'https://picsum.photos/seed/interior/200/200', categoryLink: 'Interior', description: 'Desain dan pengerjaan interior ruangan.' },
+            { name: 'Eksterior', image: 'https://picsum.photos/seed/eksterior/200/200', categoryLink: 'Interior', description: 'Desain dan pengerjaan eksterior bangunan.' },
+            { name: 'Kitchen Set', image: 'https://picsum.photos/seed/kitchen/200/200', categoryLink: 'Interior', description: 'Pembuatan kitchen set custom sesuai desain dan ukuran.' },
+            { name: 'Furniture', image: 'https://picsum.photos/seed/furniture/200/200', categoryLink: 'Interior', description: 'Pembuatan furniture custom sesuai keinginan.' },
+        ]
+    },
+    {
+        groupName: 'Panggil Tukang',
+        jobTypes: [
+            { name: 'Tukang\nHarian', image: 'https://picsum.photos/seed/tukang/200/200', categoryLink: 'Panggil Tukang', description: 'Tukang terampil untuk pekerjaan konstruksi harian.' },
+            { name: 'Tukang\nBorongan', image: 'https://picsum.photos/seed/borongan/200/200', categoryLink: 'Panggil Tukang', description: 'Pengerjaan proyek dengan sistem borongan.' },
+        ]
     }
+];
+
+
+const allJobTypes: JobType[] = originalServiceGroupsData.flatMap(group => group.jobTypes);
+
+const originalAllJobTypes = originalServiceGroupsData.flatMap(g => g.jobTypes);
+
+const popularJobTypes: JobType[] = popularServicesData.map((s: Service) => {
+    const originalJob = originalAllJobTypes.find(job => job.image === s.image && job.categoryLink === s.category);
+    
+    return {
+        name: originalJob ? originalJob.name : s.name,
+        image: s.image,
+        categoryLink: s.category,
+        description: s.description || `Layanan populer dalam kategori ${s.category}.`
+    };
+});
+
+const popularServicesGroup: ServiceGroup = {
+    groupName: 'Populer',
+    jobTypes: popularJobTypes,
+};
+
+
+const serviceGroupsData: ServiceGroup[] = [
+    {
+        groupName: 'Semua',
+        jobTypes: allJobTypes
+    },
+    popularServicesGroup,
+    ...originalServiceGroupsData
+];
+
+
+interface AllServicesPageProps {
+    onBack: () => void;
+    onJobTypeSelect: (category: string) => void;
+    initialCategoryGroupName: string;
+}
+
+const JobTypeGridCard: React.FC<{ jobType: JobType; onClick: () => void; }> = ({ jobType, onClick }) => (
+    <button onClick={onClick} className="text-center group flex flex-col items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-lg">
+        <div className="w-full aspect-square rounded-lg flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1 overflow-hidden">
+            <img src={jobType.image} alt={jobType.name} className="w-full h-full object-cover" />
+        </div>
+        <p className="mt-2 text-sm font-semibold text-slate-700 leading-tight whitespace-pre-line text-center">{jobType.name}</p>
+    </button>
+);
+
+const JobTypeListCard: React.FC<{ jobType: JobType; onClick: () => void; }> = ({ jobType, onClick }) => (
+    <button onClick={onClick} className="w-full flex items-center bg-white p-3 rounded-xl border border-slate-200 space-x-4 transition-all duration-300 hover:shadow-md hover:border-blue-400 text-left focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        <img src={jobType.image} alt={jobType.name.replace(/\n/g, ' ')} className="w-16 h-16 object-cover rounded-lg flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-slate-800">{jobType.name.replace(/\n/g, ' ')}</h3>
+            <p className="text-sm text-slate-600 mt-1 line-clamp-2">{jobType.description}</p>
+        </div>
+        <ChevronRightIcon className="w-5 h-5 text-slate-400" />
+    </button>
+);
+
+const AllServicesPage: React.FC<AllServicesPageProps> = ({ onBack, onJobTypeSelect, initialCategoryGroupName }) => {
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [isClosing, setIsClosing] = useState(false);
+    const [activeGroupName, setActiveGroupName] = useState(initialCategoryGroupName);
+    
+    const tabContainerRef = useRef<HTMLDivElement>(null);
+    const activeTabRef = useRef<HTMLButtonElement>(null);
+
+    const categoryTabs = serviceGroupsData.map(g => g.groupName);
+    const activeGroup = serviceGroupsData.find(g => g.groupName === activeGroupName);
+    
+    useEffect(() => {
+        if (activeTabRef.current) {
+            activeTabRef.current.scrollIntoView({
+                behavior: 'smooth',
+                inline: 'center',
+                block: 'nearest'
+            });
+        }
+    }, [activeGroupName]);
+
+    const handleClose = () => {
+        setIsClosing(true);
+        setTimeout(onBack, 300); // Wait for animation to finish
+    };
+    
+    // Handle closing with Escape key
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                handleClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     return (
-        <div className="bg-slate-50 min-h-screen flex flex-col animate-fade-in-up">
-            <header className="bg-white sticky top-0 z-20 shadow-sm pt-[env(safe-area-inset-top)]">
-                <div className="h-16 flex items-center px-4 relative">
-                    <button onClick={onBack} className="absolute left-2 p-2 rounded-full hover:bg-slate-100" aria-label="Back">
-                        <ChevronLeftIcon className="w-6 h-6 text-slate-700" />
-                    </button>
-                    <h1 className="text-lg font-bold text-center w-full text-slate-800">Semua Layanan</h1>
-                </div>
-            </header>
-
-            <div className="sticky top-[calc(4rem+env(safe-area-inset-top))] z-10 bg-white/80 backdrop-blur-sm border-b border-slate-200">
-                <div className="p-4 pb-3">
-                    <div className="flex items-center space-x-3">
-                        <div className="relative flex-grow">
-                            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                            <input
-                                type="text"
-                                placeholder="Cari layanan, misal 'Renovasi'"
-                                className="w-full bg-white border border-slate-300 text-slate-800 rounded-lg py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                        </div>
-                        <div className="flex-shrink-0 flex items-center bg-slate-100 border border-slate-200 rounded-lg p-1 space-x-1">
-                            <button 
+        <div className="fixed inset-0 z-20 flex flex-col justify-end" role="dialog" aria-modal="true">
+            <div className={`fixed inset-0 bg-black/40 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`} onClick={handleClose}></div>
+            <div className={`bg-white rounded-t-2xl w-full max-w-sm mx-auto shadow-xl z-10 flex flex-col ${isClosing ? 'animate-sheet-slide-down' : 'animate-slide-up'}`} style={{ height: '90vh' }}>
+                <header className="py-4 px-4 sticky top-0 bg-white z-10 rounded-t-2xl flex-shrink-0">
+                    <div className="w-10 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 cursor-pointer" onClick={handleClose}></div>
+                    <div className="flex justify-between items-center">
+                        <h1 className="text-xl font-bold text-slate-900">Semua</h1>
+                        <div className="flex items-center bg-slate-100 rounded-lg p-1 space-x-1">
+                             <button 
                                 onClick={() => setViewMode('grid')} 
-                                className={`p-2 rounded-md transition-all duration-200 ${viewMode === 'grid' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-500 hover:text-slate-800'}`}
+                                className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 flex items-center space-x-2 ${viewMode === 'grid' ? 'bg-blue-600 text-white shadow' : 'text-slate-700'}`}
                                 aria-label="Grid view"
                                 aria-pressed={viewMode === 'grid'}
                             >
-                                <ViewGridIcon className="w-5 h-5" />
+                                <DotsGridIcon className="w-4 h-4" />
+                                <span>Grid</span>
                             </button>
                             <button 
                                 onClick={() => setViewMode('list')} 
-                                className={`p-2 rounded-md transition-all duration-200 ${viewMode === 'list' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-500 hover:text-slate-800'}`}
+                                className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 flex items-center space-x-2 ${viewMode === 'list' ? 'bg-blue-600 text-white shadow' : 'text-slate-700'}`}
                                 aria-label="List view"
-                                 aria-pressed={viewMode === 'list'}
+                                aria-pressed={viewMode === 'list'}
                             >
-                                <ViewListIcon className="w-5 h-5" />
+                                <ListIcon className="w-4 h-4" />
+                                <span>List</span>
                             </button>
                         </div>
                     </div>
-                </div>
-                <div className="flex space-x-3 overflow-x-auto scrollbar-hide px-4 pb-3">
-                    {categories.map(category => (
-                        <button
-                            key={category}
-                            onClick={() => setActiveCategory(category)}
-                            className={`flex-shrink-0 px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-200 ${
-                                activeCategory === category
-                                ? 'bg-blue-800 text-white'
-                                : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                            }`}
-                        >
-                            {category}
-                        </button>
-                    ))}
-                </div>
-            </div>
+                </header>
 
-            <main className="flex-grow p-4 pb-36">
-                {filteredServices.length > 0 ? (
-                    viewMode === 'grid' ? (
-                        <div className="grid grid-cols-2 gap-4">
-                            {filteredServices.map(service => <ServiceGridCard key={service.id} service={service} onClick={() => setSelectedService(service)} />)}
+                <div ref={tabContainerRef} className="flex-shrink-0 border-b border-slate-200 bg-white">
+                    <div className="flex space-x-3 overflow-x-auto scrollbar-hide px-4 py-2">
+                        {categoryTabs.map(tab => {
+                            const isActive = activeGroupName === tab;
+                            return (
+                                <button
+                                    ref={isActive ? activeTabRef : null}
+                                    key={tab}
+                                    onClick={() => setActiveGroupName(tab)}
+                                    className={`flex-shrink-0 px-4 py-2 text-sm font-semibold whitespace-nowrap rounded-full transition-colors duration-200 ${
+                                        isActive ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'
+                                    }`}
+                                >
+                                    {tab}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <main className="flex-grow p-4 overflow-y-auto scrollbar-hide">
+                    {activeGroupName === 'Semua' ? (
+                        <div className="space-y-6">
+                            {originalServiceGroupsData.map(group => (
+                                <section key={group.groupName} className="animate-fade-in-up">
+                                    <h2 className="text-lg font-bold text-slate-800 mb-3">{group.groupName}</h2>
+                                    {viewMode === 'grid' ? (
+                                        <div className="grid grid-cols-3 gap-4">
+                                            {group.jobTypes.map(job => (
+                                                <JobTypeGridCard key={job.name} jobType={job} onClick={() => onJobTypeSelect(job.categoryLink)} />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {group.jobTypes.map(job => (
+                                                <JobTypeListCard key={job.name} jobType={job} onClick={() => onJobTypeSelect(job.categoryLink)} />
+                                            ))}
+                                        </div>
+                                    )}
+                                </section>
+                            ))}
                         </div>
                     ) : (
-                        <div className="space-y-3">
-                            {filteredServices.map(service => <ServiceListCard key={service.id} service={service} onClick={() => setSelectedService(service)} />)}
-                        </div>
-                    )
-                ) : (
-                    <div className="text-center py-16">
-                         <SearchIcon className="w-16 h-16 mx-auto text-slate-300" />
-                         <h3 className="mt-4 text-lg font-semibold text-slate-800">Layanan Tidak Ditemukan</h3>
-                         <p className="mt-1 text-slate-500">Coba gunakan kata kunci atau filter lain.</p>
-                    </div>
-                )}
-            </main>
+                        activeGroup && (
+                            <section key={activeGroup.groupName} className="animate-fade-in-up">
+                                {viewMode === 'grid' ? (
+                                    <div className="grid grid-cols-3 gap-4">
+                                        {activeGroup.jobTypes.map(job => (
+                                            <JobTypeGridCard key={job.name} jobType={job} onClick={() => onJobTypeSelect(job.categoryLink)} />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {activeGroup.jobTypes.map(job => (
+                                            <JobTypeListCard key={job.name} jobType={job} onClick={() => onJobTypeSelect(job.categoryLink)} />
+                                        ))}
+                                    </div>
+                                )}
+                            </section>
+                        )
+                    )}
+                </main>
+            </div>
         </div>
     );
 };
