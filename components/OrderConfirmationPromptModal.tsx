@@ -47,7 +47,7 @@ const OrderConfirmationPromptModal: React.FC<OrderConfirmationPromptModalProps> 
                         onClick={onCancel}
                         className="flex-1 bg-slate-100 text-slate-800 font-bold py-3 px-5 rounded-lg hover:bg-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400"
                     >
-                        ❌ Belum
+                        ❌ Kembali
                     </button>
                     <button
                         onClick={onConfirm}
