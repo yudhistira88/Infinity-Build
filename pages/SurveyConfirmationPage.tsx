@@ -46,7 +46,7 @@ const SurveyConfirmationPage: React.FC<SurveyConfirmationPageProps> = ({ surveyD
         }
         return surveyData.estimasiLuas || 'N/A';
     };
-
+    
     const getInfo = () => {
         if (surveyData.jobType === 'Bangun') {
             return surveyData.infoTambahan || 'Bangun rumah';
@@ -90,12 +90,10 @@ const SurveyConfirmationPage: React.FC<SurveyConfirmationPageProps> = ({ surveyD
                         <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
                             <h2 className="font-bold text-slate-800 mb-4">Informasi Pesanan</h2>
                             <div className="flex items-center space-x-4 mb-4">
-                                <div className="w-14 h-14 bg-cyan-100 rounded-lg flex items-center justify-center">
-                                <Squares2x2Icon className="w-7 h-7 text-cyan-600" />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-xl text-slate-800">{surveyData.categoryName}</p>
-                                    <p className="text-md text-slate-500">{surveyData.jobType}</p>
+                                <img src={surveyData.jobImage} alt={surveyData.jobType} className="w-16 h-16 object-cover rounded-lg flex-shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-orange-600">{surveyData.categoryGroupName}</p>
+                                    <h3 className="font-bold text-xl text-slate-800 truncate">{surveyData.jobType}</h3>
                                 </div>
                             </div>
                             <div className="space-y-3.5 text-sm border-t border-slate-100 pt-4">
@@ -110,11 +108,10 @@ const SurveyConfirmationPage: React.FC<SurveyConfirmationPageProps> = ({ surveyD
                                 ) : (
                                     <>
                                         {surveyData.ruanganDirenovasi && <div className="flex justify-between"><span className="text-slate-500">Ruangan</span><span className="font-semibold text-slate-800">{surveyData.ruanganDirenovasi}</span></div>}
-                                        {surveyData.estimasiLuas && <div className="flex justify-between"><span className="text-slate-500">Estimasi Luas</span><span className="font-semibold text-slate-800">{getLuas()} m²</span></div>}
+                                        {surveyData.estimasiLuas && <div className="flex justify-between"><span className="text-slate-500">Luas</span><span className="font-semibold text-slate-800">{getLuas()} m²</span></div>}
                                     </>
                                 )}
                                 
-                                <div className="flex justify-between items-start"><span className="text-slate-500 flex-shrink-0">Informasi</span><span className="font-semibold text-slate-800 text-right w-1/2 break-words">{getInfo()}</span></div>
                             </div>
                         </div>
 
